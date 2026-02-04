@@ -1,0 +1,412 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-outfit);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+}
+
+:root {
+  --radius: 0.625rem;
+  /* Light mode: Soft celestial lavender/pink - cosmic nebula inspired */
+  --background: oklch(0.94 0.04 300);
+  --foreground: oklch(0.20 0.05 280);
+  --card: oklch(0.97 0.03 310);
+  --card-foreground: oklch(0.20 0.05 280);
+  --popover: oklch(0.97 0.03 310);
+  --popover-foreground: oklch(0.20 0.05 280);
+  --primary: oklch(0.50 0.20 280);
+  --primary-foreground: oklch(0.98 0.02 300);
+  --secondary: oklch(0.88 0.06 320);
+  --secondary-foreground: oklch(0.25 0.05 280);
+  --muted: oklch(0.88 0.05 290);
+  --muted-foreground: oklch(0.25 0.04 280);
+  --accent: oklch(0.85 0.08 330);
+  --accent-foreground: oklch(0.20 0.05 280);
+  --destructive: oklch(0.55 0.22 25);
+  --border: oklch(0.70 0.08 290 / 30%);
+  --input: oklch(0.60 0.06 280 / 20%);
+  --ring: oklch(0.55 0.15 280);
+  /* Cosmic chart colors - light mode */
+  --chart-1: oklch(0.55 0.22 280);
+  --chart-2: oklch(0.60 0.20 330);
+  --chart-3: oklch(0.50 0.18 200);
+  --chart-4: oklch(0.65 0.20 50);
+  --chart-5: oklch(0.55 0.18 160);
+  /* Sidebar - soft cosmic */
+  --sidebar: oklch(0.92 0.05 300);
+  --sidebar-foreground: oklch(0.20 0.05 280);
+  --sidebar-primary: oklch(0.50 0.18 280);
+  --sidebar-primary-foreground: oklch(0.98 0.02 300);
+  --sidebar-accent: oklch(0.88 0.06 310);
+  --sidebar-accent-foreground: oklch(0.20 0.05 280);
+  --sidebar-border: oklch(0.70 0.06 290 / 25%);
+  --sidebar-ring: oklch(0.55 0.15 280);
+  /* Navbar cosmic gradient */
+  --navbar: oklch(0.92 0.06 300 / 85%);
+  /* Semantic status colors */
+  --status-info-bg: oklch(0.90 0.08 250);
+  --status-info-text: oklch(0.45 0.18 250);
+  --link: oklch(0.50 0.18 255);
+}
+
+.dark {
+  /* Dark mode: Deep space indigo/violet - cosmic nebula inspired */
+  --background: oklch(0.14 0.04 280);
+  --foreground: oklch(0.95 0.02 300);
+  /* Card with cosmic transparency for glassmorphism */
+  --card: oklch(0.18 0.05 285 / 0.7);
+  --card-foreground: oklch(0.95 0.02 300);
+  --popover: oklch(0.16 0.05 280);
+  --popover-foreground: oklch(0.95 0.02 300);
+  --primary: oklch(0.75 0.15 330);
+  --primary-foreground: oklch(0.15 0.04 280);
+  --secondary: oklch(0.25 0.06 290);
+  --secondary-foreground: oklch(0.95 0.02 300);
+  --muted: oklch(0.22 0.05 285);
+  --muted-foreground: oklch(0.82 0.04 300);
+  --accent: oklch(0.30 0.08 310);
+  --accent-foreground: oklch(0.95 0.02 300);
+  --destructive: oklch(0.60 0.22 25);
+  --border: oklch(0.50 0.10 290 / 20%);
+  --input: oklch(0.40 0.08 280 / 25%);
+  --ring: oklch(0.65 0.18 330);
+  /* Cosmic chart colors - dark mode */
+  --chart-1: oklch(0.65 0.25 280);
+  --chart-2: oklch(0.70 0.22 330);
+  --chart-3: oklch(0.60 0.20 200);
+  --chart-4: oklch(0.75 0.22 50);
+  --chart-5: oklch(0.65 0.20 160);
+  /* Sidebar - deep space */
+  --sidebar: oklch(0.12 0.05 280);
+  --sidebar-foreground: oklch(0.95 0.02 300);
+  --sidebar-primary: oklch(0.70 0.20 330);
+  --sidebar-primary-foreground: oklch(0.95 0.02 300);
+  --sidebar-accent: oklch(0.22 0.06 290);
+  --sidebar-accent-foreground: oklch(0.95 0.02 300);
+  --sidebar-border: oklch(0.50 0.10 290 / 15%);
+  --sidebar-ring: oklch(0.65 0.18 330);
+  /* Navbar cosmic gradient */
+  --navbar: oklch(0.12 0.06 280 / 90%);
+  /* Semantic status colors */
+  --status-info-bg: oklch(0.22 0.08 250 / 0.5);
+  --status-info-text: oklch(0.72 0.14 250);
+  --link: oklch(0.72 0.14 255);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  h1, h2, h3 {
+    font-family: var(--font-display), var(--font-sans), sans-serif;
+  }
+}
+
+.font-display {
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+}
+
+/* Dashboard cosmic accent background - subtle gradient that connects to landing theme */
+.dashboard-bg {
+  background:
+    radial-gradient(ellipse at 0% 0%, oklch(0.92 0.04 310 / 0.4) 0%, transparent 50%),
+    radial-gradient(ellipse at 100% 100%, oklch(0.90 0.04 250 / 0.3) 0%, transparent 50%),
+    var(--background);
+}
+
+.dark .dashboard-bg {
+  background:
+    radial-gradient(ellipse at 0% 0%, oklch(0.18 0.06 310 / 0.4) 0%, transparent 50%),
+    radial-gradient(ellipse at 100% 100%, oklch(0.16 0.05 250 / 0.3) 0%, transparent 50%),
+    var(--background);
+}
+
+/* Sidebar cosmic accent - subtle top border glow */
+.sidebar-cosmic {
+  border-right: 1px solid var(--border);
+  background:
+    linear-gradient(180deg, oklch(0.90 0.05 310 / 0.3) 0%, transparent 120px),
+    var(--card);
+}
+
+.dark .sidebar-cosmic {
+  background:
+    linear-gradient(180deg, oklch(0.18 0.08 310 / 0.4) 0%, transparent 120px),
+    var(--card);
+}
+
+/* Subtle noise texture overlay for depth */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.025;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Staggered entrance animations */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.7s ease-out forwards;
+  opacity: 0;
+}
+
+.animate-delay-100 { animation-delay: 100ms; }
+.animate-delay-200 { animation-delay: 200ms; }
+.animate-delay-300 { animation-delay: 300ms; }
+.animate-delay-400 { animation-delay: 400ms; }
+.animate-delay-500 { animation-delay: 500ms; }
+.animate-delay-600 { animation-delay: 600ms; }
+
+/* Cosmic Dreamy Background */
+@keyframes nebula-drift {
+  0% {
+    background-position: 0% 50%;
+    filter: hue-rotate(0deg);
+  }
+  33% {
+    background-position: 50% 100%;
+    filter: hue-rotate(15deg);
+  }
+  66% {
+    background-position: 100% 50%;
+    filter: hue-rotate(-15deg);
+  }
+  100% {
+    background-position: 0% 50%;
+    filter: hue-rotate(0deg);
+  }
+}
+
+@keyframes cosmic-rotate {
+  0% {
+    transform: rotate(0deg) scale(1.5);
+  }
+  100% {
+    transform: rotate(360deg) scale(1.5);
+  }
+}
+
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+  }
+  25% {
+    transform: translateY(-10px) translateX(5px);
+  }
+  50% {
+    transform: translateY(-5px) translateX(-5px);
+  }
+  75% {
+    transform: translateY(-15px) translateX(3px);
+  }
+}
+
+.animated-gradient-bg {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Nebula gradient layer */
+.animated-gradient-bg::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background:
+    /* Deep violet nebula core */
+    radial-gradient(ellipse at 15% 25%, oklch(0.55 0.22 285 / 0.5) 0%, transparent 50%),
+    /* Hot pink emission nebula */
+    radial-gradient(ellipse at 85% 15%, oklch(0.65 0.25 330 / 0.45) 0%, transparent 45%),
+    /* Soft magenta mist */
+    radial-gradient(ellipse at 70% 75%, oklch(0.60 0.20 310 / 0.4) 0%, transparent 55%),
+    /* Teal reflection nebula */
+    radial-gradient(ellipse at 5% 70%, oklch(0.50 0.18 200 / 0.35) 0%, transparent 50%),
+    /* Golden star cluster */
+    radial-gradient(ellipse at 95% 55%, oklch(0.70 0.20 60 / 0.3) 0%, transparent 45%),
+    /* Deep indigo void */
+    radial-gradient(ellipse at 50% 5%, oklch(0.35 0.18 270 / 0.45) 0%, transparent 60%);
+  background-size: 200% 200%;
+  animation: nebula-drift 20s ease-in-out infinite, cosmic-rotate 40s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Starfield layer */
+.animated-gradient-bg::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    /* Large bright stars */
+    radial-gradient(2px 2px at 20% 30%, rgba(255, 255, 255, 0.9) 0%, transparent 100%),
+    radial-gradient(2px 2px at 40% 70%, rgba(255, 255, 255, 0.8) 0%, transparent 100%),
+    radial-gradient(2px 2px at 50% 20%, rgba(255, 255, 255, 0.9) 0%, transparent 100%),
+    radial-gradient(2px 2px at 60% 50%, rgba(255, 255, 255, 0.7) 0%, transparent 100%),
+    radial-gradient(2px 2px at 70% 80%, rgba(255, 255, 255, 0.85) 0%, transparent 100%),
+    radial-gradient(2px 2px at 80% 10%, rgba(255, 255, 255, 0.9) 0%, transparent 100%),
+    radial-gradient(2px 2px at 90% 40%, rgba(255, 255, 255, 0.75) 0%, transparent 100%),
+    radial-gradient(2px 2px at 10% 60%, rgba(255, 255, 255, 0.8) 0%, transparent 100%),
+    radial-gradient(2px 2px at 30% 90%, rgba(255, 255, 255, 0.85) 0%, transparent 100%),
+    radial-gradient(2px 2px at 85% 65%, rgba(255, 255, 255, 0.9) 0%, transparent 100%),
+    /* Medium stars */
+    radial-gradient(1.5px 1.5px at 15% 45%, rgba(255, 255, 255, 0.6) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 25% 85%, rgba(255, 255, 255, 0.5) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 35% 15%, rgba(255, 255, 255, 0.6) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 45% 55%, rgba(255, 255, 255, 0.55) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 55% 35%, rgba(255, 255, 255, 0.6) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 65% 95%, rgba(255, 255, 255, 0.5) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 75% 25%, rgba(255, 255, 255, 0.55) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 95% 75%, rgba(255, 255, 255, 0.6) 0%, transparent 100%),
+    /* Small distant stars */
+    radial-gradient(1px 1px at 5% 15%, rgba(255, 255, 255, 0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 12% 78%, rgba(255, 255, 255, 0.35) 0%, transparent 100%),
+    radial-gradient(1px 1px at 22% 52%, rgba(255, 255, 255, 0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 32% 8%, rgba(255, 255, 255, 0.35) 0%, transparent 100%),
+    radial-gradient(1px 1px at 42% 92%, rgba(255, 255, 255, 0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 52% 42%, rgba(255, 255, 255, 0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 62% 18%, rgba(255, 255, 255, 0.35) 0%, transparent 100%),
+    radial-gradient(1px 1px at 72% 68%, rgba(255, 255, 255, 0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 82% 38%, rgba(255, 255, 255, 0.35) 0%, transparent 100%),
+    radial-gradient(1px 1px at 92% 88%, rgba(255, 255, 255, 0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 8% 33%, rgba(255, 255, 255, 0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 18% 63%, rgba(255, 255, 255, 0.35) 0%, transparent 100%),
+    radial-gradient(1px 1px at 28% 23%, rgba(255, 255, 255, 0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 38% 73%, rgba(255, 255, 255, 0.35) 0%, transparent 100%),
+    radial-gradient(1px 1px at 48% 3%, rgba(255, 255, 255, 0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 58% 83%, rgba(255, 255, 255, 0.35) 0%, transparent 100%),
+    radial-gradient(1px 1px at 68% 43%, rgba(255, 255, 255, 0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 78% 13%, rgba(255, 255, 255, 0.35) 0%, transparent 100%),
+    radial-gradient(1px 1px at 88% 53%, rgba(255, 255, 255, 0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 98% 28%, rgba(255, 255, 255, 0.35) 0%, transparent 100%);
+  animation: twinkle 4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Dark mode version with deeper cosmic colors */
+.dark .animated-gradient-bg::before {
+  background:
+    /* Deep violet nebula core */
+    radial-gradient(ellipse at 15% 25%, oklch(0.30 0.28 285 / 0.65) 0%, transparent 50%),
+    /* Hot pink emission nebula */
+    radial-gradient(ellipse at 85% 15%, oklch(0.40 0.30 330 / 0.55) 0%, transparent 45%),
+    /* Soft magenta mist */
+    radial-gradient(ellipse at 70% 75%, oklch(0.35 0.25 310 / 0.5) 0%, transparent 55%),
+    /* Teal reflection nebula */
+    radial-gradient(ellipse at 5% 70%, oklch(0.28 0.22 200 / 0.45) 0%, transparent 50%),
+    /* Golden star cluster */
+    radial-gradient(ellipse at 95% 55%, oklch(0.45 0.25 60 / 0.4) 0%, transparent 45%),
+    /* Deep indigo void */
+    radial-gradient(ellipse at 50% 5%, oklch(0.18 0.20 270 / 0.6) 0%, transparent 60%);
+}
+
+/* Brighter stars in dark mode */
+.dark .animated-gradient-bg::after {
+  opacity: 1;
+}
+
+/* Dimmer stars in light mode */
+:root .animated-gradient-bg::after {
+  opacity: 0.4;
+}
+
+/* Respect user's motion preferences for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .animated-gradient-bg::before,
+  .animated-gradient-bg::after {
+    animation: none;
+  }
+  .animate-fade-up {
+    animation: none;
+    opacity: 1;
+  }
+  /* Disable all Tailwind animate-* classes */
+  .animate-spin,
+  .animate-pulse,
+  .animate-ping,
+  .animate-bounce,
+  [class*="animate-"] {
+    animation: none !important;
+  }
+  /* Disable transitions for users who prefer reduced motion */
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
