@@ -1,0 +1,31 @@
+{
+  "name": "ai2qa-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for Ai2QA browser automation with Puppeteer and Playwright engines",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "install-browsers": "npx playwright install chromium"
+  },
+  "dependencies": {
+    "puppeteer": "^23.0.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "playwright": "^1.40.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "transform": {},
+    "moduleFileExtensions": ["js", "mjs"],
+    "testMatch": ["**/__tests__/**/*.test.js"]
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "private": true
+}
