@@ -1,0 +1,246 @@
+spring:
+  application:
+    name: ai2qa
+
+  # Jackson Configuration for Optional serialization
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+    default-property-inclusion: non_absent
+
+  # File Upload Configuration
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 5MB
+
+  # Database Configuration - H2 In-Memory (Hackathon - zero setup)
+  datasource:
+    url: jdbc:h2:mem:ai2qa;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+    show-sql: false
+
+  # H2 Console (optional - for debugging)
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  # Flyway disabled for hackathon (using ddl-auto: create)
+  flyway:
+    enabled: false
+
+  # Redis removed for hackathon (using in-memory queues)
+
+  # Spring AI - Gemini Only (Hackathon)
+  ai:
+    vertex:
+      ai:
+        gemini:
+          project-id: ${GOOGLE_CLOUD_PROJECT:your-project-id}
+          location: us-central1
+          chat:
+            options:
+              model: ${AI_MODEL:gemini-2.5-flash}
+              temperature: ${AI_TEMPERATURE:0.2}
+
+# reCAPTCHA Configuration (Hackathon - abuse prevention)
+recaptcha:
+  enabled: ${RECAPTCHA_ENABLED:false}
+  secret-key: ${RECAPTCHA_SECRET_KEY:}
+
+# Ai2QA AI Provider Configuration - Hackathon: Gemini Only
+ai2qa:
+  # Daily global cap on test runs (Hackathon - prevent abuse)
+  daily-cap: ${DAILY_CAP:20}
+  ai:
+    # Hackathon: Always use Vertex AI / Gemini
+    provider: vertex-ai
+    model: ${AI_MODEL:gemini-2.5-flash}
+    temperature: ${AI_TEMPERATURE:0.2}
+  # MCP Bridge settings
+  mcp:
+    node-path: node
+    server-script: ${MCP_SERVER_SCRIPT:classpath:mcp-server/server.js}
+    startup-timeout-ms: 30000
+  # Browser automation settings
+  browser:
+    # Browser engine: puppeteer | playwright
+    engine: ${BROWSER_ENGINE:puppeteer}
+    # Snapshot mode: legacy | aria | auto
+    # - legacy: CSS selector-based snapshots (works with Puppeteer)
+    # - aria: Accessibility tree snapshots (requires Playwright engine)
+    # - auto: Uses aria if Playwright engine is active, otherwise legacy
+    snapshot-mode: ${SNAPSHOT_MODE:auto}
+    # Kill-switch: disable aria mode at runtime (falls back to legacy)
+    aria-enabled: ${ARIA_SNAPSHOT_ENABLED:true}
+    # Enable fallback to legacy if aria fails
+    fallback-enabled: ${BROWSER_FALLBACK:true}
+  # Orchestrator settings (retry limits, safety thresholds)
+  orchestrator:
+    # Max retry attempts per action step (total attempts = max-retries + 1)
+    # After max retries: optional steps are skipped, required steps abort the test
+    max-retries: ${ORCHESTRATOR_MAX_RETRIES:3}
+    # Max attempts to clear blocking obstacles (modals/popups) before each step
+    max-obstacle-clear-attempts: ${ORCHESTRATOR_MAX_OBSTACLE_CLEAR:3}
+    # Global safety limit - terminate test if exceeded (prevents infinite loops)
+    # A 12-step test with all retries = 48 iterations, so 50 is reasonable
+    max-loop-iterations: ${ORCHESTRATOR_MAX_ITERATIONS:50}
+  # Selector cache encryption
+  cache:
+    encryption-key: ${CACHE_ENCRYPTION_KEY:ZGV2LWVuY3J5cHRpb24ta2V5LTMyLWJ5dGVzISEhISE=}
+  # Email notifications
+  email:
+    from: Ai2QA <admin@ai2qa.com>
+    enabled: ${EMAIL_NOTIFICATIONS_ENABLED:false}
+  # Admin alerts for non-chargeable failures
+  admin:
+    alert-email: ${AI2QA_ADMIN_ALERT_EMAIL:admin@ai2qa.com}
+    alerts-enabled: ${AI2QA_ADMIN_ALERTS_ENABLED:true}
+  # Security settings
+  security:
+    target:
+      # Comma-separated list of blocked domains/keywords
+      blacklist: ${AI2QA_SECURITY_TARGET_BLACKLIST:ai2qa.com,localhost,127.0.0.1,checksum.ai,copado.com,.gov,.mil,.edu}
+      # Comma-separated list of allowed domains/IPs (bypasses blacklist when self-test mode is enabled)
+      allowlist: ${AI2QA_SECURITY_TARGET_ALLOWLIST:}
+      # Enable self-test mode to allow testing specific targets (e.g., other AI2QA instances)
+      self-test-enabled: ${AI2QA_SELF_TEST_MODE:false}
+    # Google Safe Browsing API integration
+    safe-browsing:
+      enabled: ${SAFE_BROWSING_ENABLED:false}
+      api-key: ${GOOGLE_SAFE_BROWSING_API_KEY:}
+      # Daily rate limit to stay within free tier (10K/day). Default 9K for safety margin.
+      daily-limit: ${SAFE_BROWSING_DAILY_LIMIT:9000}
+  # Rate limiting settings (request rate per time window)
+  rate-limit:
+    enabled: ${RATE_LIMIT_ENABLED:true}
+    user-per-minute: ${RATE_LIMIT_USER_PER_MINUTE:10}
+    ip-per-hour: ${RATE_LIMIT_IP_PER_HOUR:30}
+    target-per-hour: ${RATE_LIMIT_TARGET_PER_HOUR:100}
+  # Concurrent test limits (max simultaneous running tests)
+  # Prevents API rate limit exhaustion with Anthropic/GCP quotas
+  # Reduced to minimize Sonnet fallback (Haiku is 3-5x cheaper)
+  concurrent-limit:
+    enabled: ${CONCURRENT_LIMIT_ENABLED:true}
+    # Max concurrent tests per user (reduced from 3 to avoid rate limits)
+    max-per-user: ${CONCURRENT_LIMIT_MAX_PER_USER:2}
+    # Max concurrent tests system-wide (reduced from 50 to stay under Haiku rate limits)
+    max-global: ${CONCURRENT_LIMIT_MAX_GLOBAL:30}
+  # Data retention policy
+  retention:
+    days: ${ARTIFACT_RETENTION_DAYS:90}
+  # Analytics removed for hackathon
+  # AI Prompts configuration (hot-reloadable)
+  prompts:
+    # External path for prompt files (overrides classpath)
+    external-path: ${AI2QA_PROMPTS_PATH:}
+    # Classpath base path for embedded prompts
+    classpath-path: prompts
+    # Hot-reload check interval in seconds (0 = disabled)
+    refresh-interval-seconds: ${AI2QA_PROMPTS_REFRESH:60}
+    # Enable/disable hot-reload (useful to disable in production for stability)
+    hot-reload-enabled: ${AI2QA_PROMPTS_HOT_RELOAD:true}
+  # Local agent metering settings
+  metering:
+    # Number of tool calls per credit (1 credit = N tool calls)
+    # Can be adjusted without agent redeployment - server sends this to agent
+    calls-per-credit: ${AI2QA_CALLS_PER_CREDIT:20}
+
+# Resilience4j Circuit Breaker Configuration
+# Protects against cascading failures when AI service is degraded
+resilience4j:
+  circuitbreaker:
+    instances:
+      aiService:
+        # Sliding window for failure rate calculation
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        # Open circuit when 50% of calls fail
+        failureRateThreshold: 50
+        # Wait 60 seconds before attempting to close circuit
+        waitDurationInOpenState: 60s
+        # Allow 3 calls in half-open state to test recovery
+        permittedNumberOfCallsInHalfOpenState: 3
+        # Minimum calls before calculating failure rate
+        minimumNumberOfCalls: 5
+        # Record these exceptions as failures
+        recordExceptions:
+          - java.util.concurrent.TimeoutException
+          - java.net.SocketTimeoutException
+          - java.io.IOException
+        # Ignore these (don't count as failures)
+        ignoreExceptions:
+          - java.lang.IllegalArgumentException
+  timelimiter:
+    instances:
+      aiService:
+        # Time limit for AI operations (matches summary timeout of 300s)
+        timeoutDuration: 300s
+        # Cancel running task on timeout
+        cancelRunningFuture: true
+
+# Server Configuration
+server:
+  port: 8080
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,refresh,prompts
+  endpoint:
+    health:
+      show-details: when_authorized
+  health:
+    mail:
+      enabled: false
+
+# Logging
+logging:
+  level:
+    com.ai2qa: DEBUG
+    com.ai2qa.infra.jpa.tenant.TenantFilterAspect: INFO
+    org.springframework.ai: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Stripe removed for hackathon (no payments)
+
+# Clerk removed for hackathon (no authentication)
+
+# Email Configuration (Gmail SMTP)
+spring.mail:
+  host: smtp.gmail.com
+  port: 587
+  username: admin@ai2qa.com
+  password: ${GMAIL_APP_PASSWORD:placeholder}
+  properties:
+    mail:
+      smtp:
+        auth: true
+        starttls:
+          enable: true
+        # Timeout settings to prevent "Broken pipe" errors
+        connectiontimeout: 10000
+        timeout: 10000
+        writetimeout: 10000
+
+# Google Cloud Storage (Artifacts)
+gcp:
+  storage:
+    bucket-name: ${GCP_STORAGE_BUCKET:ai2qa-mvp-artifacts}
