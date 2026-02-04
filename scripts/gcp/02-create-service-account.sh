@@ -29,7 +29,6 @@ ROLES=(
   "roles/logging.logWriter"
   "roles/cloudtrace.agent"
   "roles/errorreporting.writer"
-  "roles/redis.editor"
 )
 
 for ROLE in "${ROLES[@]}"; do

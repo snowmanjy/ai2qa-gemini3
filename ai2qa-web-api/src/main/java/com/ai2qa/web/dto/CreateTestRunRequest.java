@@ -14,6 +14,7 @@ import java.util.List;
  * @param persona           Optional test persona (defaults to STANDARD if blank)
  * @param cookiesJson       Optional JSON string of cookies for authenticated testing
  * @param recaptchaToken    Optional reCAPTCHA v3 token for abuse prevention
+ * @param additionalContext Optional additional context to append to persona system prompt
  */
 public record CreateTestRunRequest(
         @NotBlank(message = "Target URL is required")
@@ -29,7 +30,10 @@ public record CreateTestRunRequest(
         @Size(max = 50000, message = "Cookies JSON too large")
         String cookiesJson,
 
-        String recaptchaToken
+        String recaptchaToken,
+
+        @Size(max = 200, message = "Additional context must not exceed 200 characters")
+        String additionalContext
 ) {
 
     /**

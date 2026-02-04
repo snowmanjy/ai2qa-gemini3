@@ -4,9 +4,6 @@ import { http, HttpResponse } from 'msw'
 import { server } from '@/__tests__/mocks/server'
 import { useParams } from 'next/navigation'
 
-import '@/__tests__/mocks/clerk'
-import '@/__tests__/mocks/analytics'
-
 import RunDetailPage from './page'
 
 vi.mocked(useParams).mockReturnValue({ id: 'run-1' })

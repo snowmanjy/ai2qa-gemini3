@@ -35,14 +35,7 @@ spring:
     locations: classpath:db/migration
     validate-on-migrate: true
 
-  # Redis - Cloud Memorystore or external Redis
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
-      ssl:
-        enabled: ${REDIS_SSL_ENABLED:false}
+  # Redis removed for hackathon - using in-memory queues
 
   # Spring AI - Vertex AI (uses ADC in Cloud Run)
   ai:
@@ -115,14 +108,8 @@ logging:
   pattern:
     console: '{"timestamp":"%d{ISO8601}","level":"%level","logger":"%logger","message":"%msg"}%n'
 
-# Stripe Configuration
-stripe:
-  api-key: ${STRIPE_API_KEY}
-  webhook-secret: ${STRIPE_WEBHOOK_SECRET}
-
-# Clerk Configuration (for webhooks)
-clerk:
-  webhook-secret: ${CLERK_WEBHOOK_SECRET:}
+# Stripe removed for hackathon - no payments
+# Clerk removed for hackathon - no authentication
 
 # Email Configuration (Gmail SMTP)
 spring.mail:
@@ -148,14 +135,13 @@ gcp:
 
 # Ai2QA Production Settings
 ai2qa:
-  # AI Provider - Anthropic for production
+  # Daily global cap on test runs (Hackathon - prevent abuse)
+  daily-cap: ${DAILY_CAP:50}
+  # AI Provider - Vertex AI / Gemini only for hackathon
   ai:
-    provider: ${AI_PROVIDER:anthropic}
+    provider: vertex-ai
     temperature: ${AI_TEMPERATURE:0.2}
-    anthropic:
-      api-key: ${ANTHROPIC_API_KEY}
-      model: ${ANTHROPIC_MODEL:claude-haiku-4-5-20251001}
-      fallback-model: ${ANTHROPIC_FALLBACK_MODEL:claude-sonnet-4-5-20250929}
+    model: ${VERTEX_AI_MODEL:gemini-2.5-flash}
 
   mcp:
     node-path: node
@@ -182,11 +168,7 @@ ai2qa:
     alert-email: ${AI2QA_ADMIN_ALERT_EMAIL:admin@ai2qa.com}
     alerts-enabled: ${AI2QA_ADMIN_ALERTS_ENABLED:true}
 
-  # Analytics (PostHog)
-  analytics:
-    enabled: ${POSTHOG_ENABLED:true}
-    api-key: ${POSTHOG_API_KEY}
-    host: ${POSTHOG_HOST:https://app.posthog.com}
+  # Analytics removed for hackathon (no PostHog)
 
   # Security settings
   security:

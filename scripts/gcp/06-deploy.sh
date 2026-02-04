@@ -15,14 +15,12 @@ echo "=== Phase 4: Deploy Backend Services (Hackathon Edition) ==="
 # Get infrastructure details
 export SA_EMAIL="ai2qa-app@${PROJECT_ID}.iam.gserviceaccount.com"
 export CLOUD_SQL_INSTANCE=$(gcloud sql instances describe ai2qa-db --format="value(connectionName)")
-export REDIS_HOST=$(gcloud redis instances describe ai2qa-redis --region=$REGION --format="value(host)" 2>/dev/null || echo "")
 export DOCKER_REPO="${REGION}-docker.pkg.dev/${PROJECT_ID}/ai2qa"
 
 echo ""
 echo "Configuration:"
 echo "  Service Account: $SA_EMAIL"
 echo "  Cloud SQL: $CLOUD_SQL_INSTANCE"
-echo "  Redis Host: ${REDIS_HOST:-NOT CONFIGURED (using in-memory)}"
 echo "  Docker Repo: $DOCKER_REPO"
 
 # -----------------------------------------------------------------------------
@@ -58,11 +56,6 @@ ENV_VARS="${ENV_VARS}@AI2QA_BROWSER_ENGINE=playwright"
 ENV_VARS="${ENV_VARS}@AI2QA_BROWSER_SNAPSHOT_MODE=aria"
 ENV_VARS="${ENV_VARS}@DAILY_CAP=${DAILY_CAP:-50}"
 ENV_VARS="${ENV_VARS}@RECAPTCHA_ENABLED=${RECAPTCHA_ENABLED:-false}"
-
-# Add Redis host if configured
-if [ -n "$REDIS_HOST" ]; then
-  ENV_VARS="${ENV_VARS}@SPRING_DATA_REDIS_HOST=${REDIS_HOST}"
-fi
 
 # Build secrets string (only required secrets)
 SECRETS="CLOUD_SQL_PASSWORD=db-password:latest"
@@ -112,11 +105,6 @@ WORKER_ENV_VARS="${WORKER_ENV_VARS}@CLOUD_SQL_INSTANCE=${CLOUD_SQL_INSTANCE}"
 WORKER_ENV_VARS="${WORKER_ENV_VARS}@GOOGLE_CLOUD_PROJECT=${PROJECT_ID}"
 WORKER_ENV_VARS="${WORKER_ENV_VARS}@AI2QA_BROWSER_ENGINE=playwright"
 WORKER_ENV_VARS="${WORKER_ENV_VARS}@AI2QA_BROWSER_SNAPSHOT_MODE=aria"
-
-# Add Redis host if configured
-if [ -n "$REDIS_HOST" ]; then
-  WORKER_ENV_VARS="${WORKER_ENV_VARS}@SPRING_DATA_REDIS_HOST=${REDIS_HOST}"
-fi
 
 # Worker secrets (minimal)
 WORKER_SECRETS="CLOUD_SQL_PASSWORD=db-password:latest,CACHE_ENCRYPTION_KEY=cache-encryption-key:latest"

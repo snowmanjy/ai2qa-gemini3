@@ -29,16 +29,8 @@ gcloud services enable \
   run.googleapis.com \
   cloudbuild.googleapis.com \
   artifactregistry.googleapis.com \
-  sqladmin.googleapis.com \
-  redis.googleapis.com \
-  storage.googleapis.com \
   secretmanager.googleapis.com \
   aiplatform.googleapis.com \
-  firebase.googleapis.com \
-  compute.googleapis.com \
-  vpcaccess.googleapis.com \
-  cloudtrace.googleapis.com \
-  clouderrorreporting.googleapis.com \
   iam.googleapis.com
 
 echo ""
