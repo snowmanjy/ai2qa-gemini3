@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.ai2qa</groupId>
+    <artifactId>ai2qa-root</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>Ai2QA</name>
+    <description>AI-powered autonomous QA testing platform</description>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.4.1</version>
+        <relativePath/>
+    </parent>
+
+    <modules>
+        <module>ai2qa-domain-core</module>
+        <module>ai2qa-application</module>
+        <module>ai2qa-infra-jpa</module>
+        <!-- ai2qa-infra-redis removed for hackathon (replaced with in-memory queues) -->
+        <module>ai2qa-mcp-bridge</module>
+        <module>ai2qa-web-api</module>
+        <module>ai2qa-boot</module>
+    </modules>
+
+    <properties>
+        <java.version>21</java.version>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Spring AI -->
+        <spring-ai.version>1.0.0-M4</spring-ai.version>
+
+        <!-- Testing -->
+        <testcontainers.version>1.20.4</testcontainers.version>
+
+        <!-- Utilities -->
+        <jackson.version>2.18.2</jackson.version>
+        <springdoc.version>2.7.0</springdoc.version>
+
+        <!-- Cloud SQL -->
+        <cloud-sql-socket-factory.version>1.21.0</cloud-sql-socket-factory.version>
+
+        <!-- Google Auth Library - must be compatible with Cloud SQL socket factory -->
+        <google-auth-library.version>1.23.0</google-auth-library.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Internal Modules -->
+            <dependency>
+                <groupId>com.ai2qa</groupId>
+                <artifactId>ai2qa-domain-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.ai2qa</groupId>
+                <artifactId>ai2qa-application</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.ai2qa</groupId>
+                <artifactId>ai2qa-infra-jpa</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <!-- ai2qa-infra-redis removed for hackathon -->
+            <dependency>
+                <groupId>com.ai2qa</groupId>
+                <artifactId>ai2qa-mcp-bridge</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.ai2qa</groupId>
+                <artifactId>ai2qa-web-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- Spring AI BOM -->
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-bom</artifactId>
+                <version>${spring-ai.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Testcontainers BOM -->
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-bom</artifactId>
+                <version>${testcontainers.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Jackson -->
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-jsr310</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+
+            <!-- Cloud SQL Socket Factory (for production Cloud SQL connections) -->
+            <dependency>
+                <groupId>com.google.cloud.sql</groupId>
+                <artifactId>postgres-socket-factory</artifactId>
+                <version>${cloud-sql-socket-factory.version}</version>
+            </dependency>
+
+            <!-- Google Auth Library - force version compatible with Cloud SQL socket factory -->
+            <dependency>
+                <groupId>com.google.auth</groupId>
+                <artifactId>google-auth-library-oauth2-http</artifactId>
+                <version>${google-auth-library.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.auth</groupId>
+                <artifactId>google-auth-library-credentials</artifactId>
+                <version>${google-auth-library.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <!-- Common testing dependencies for all modules -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.13.0</version>
+                    <configuration>
+                        <source>21</source>
+                        <target>21</target>
+                        <compilerArgs>
+                            <arg>--enable-preview</arg>
+                        </compilerArgs>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.5.2</version>
+                    <configuration>
+                        <argLine>--enable-preview</argLine>
+                        <environmentVariables>
+                            <!-- Required for Testcontainers with Colima on macOS -->
+                            <TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE>/var/run/docker.sock</TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE>
+                        </environmentVariables>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <repositories>
+        <repository>
+            <id>spring-milestones</id>
+            <name>Spring Milestones</name>
+            <url>https://repo.spring.io/milestone</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+</project>
