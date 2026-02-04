@@ -1,0 +1,11 @@
+Test ID,Test Name,Steps,Expected Result
+TC001,Login with valid credentials,Navigate to login page and enter valid username and password then click submit,User should be redirected to dashboard
+TC002,Login with invalid password,Navigate to login page and enter valid username with wrong password,Error message should display saying invalid credentials
+TC003,Search functionality,Click on search bar and type product name then press enter,Search results should display matching products
+TC004,Add item to cart,Browse to product page and click Add to Cart button,Item should appear in shopping cart with correct quantity
+TC005,Checkout process,Go to cart and click checkout then fill shipping details,Order confirmation page should display with order number
+TC006,Form validation,Submit contact form with empty required fields,Validation errors should appear for each required field
+TC007,Navigation menu,Click on each main navigation item,Each page should load without errors
+TC008,Responsive design,Resize browser to mobile width,Layout should adapt to mobile view without breaking
+TC009,Password reset,Click forgot password and enter email,Password reset email should be sent
+TC010,Logout functionality,Click logout button from user menu,User should be redirected to login page and session cleared

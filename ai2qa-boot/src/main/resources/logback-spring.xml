@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!-- Property for application name -->
+    <springProperty scope="context" name="APP_NAME" source="spring.application.name" defaultValue="ai2qa"/>
+
+    <!-- ========== LOCAL DEVELOPMENT PROFILE ========== -->
+    <springProfile name="default,local,dev">
+        <!-- Console appender with readable format for development -->
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            </encoder>
+        </appender>
+
+        <!-- Application code: DEBUG for local development -->
+        <logger name="com.ai2qa" level="DEBUG"/>
+
+        <!-- Framework loggers: INFO for local (useful for debugging) -->
+        <logger name="org.springframework" level="INFO"/>
+        <logger name="org.hibernate" level="INFO"/>
+        <logger name="org.apache" level="WARN"/>
+
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+    <!-- ========== PRODUCTION PROFILE (GCP Cloud Logging) ========== -->
+    <springProfile name="prod,production">
+        <!-- JSON appender for GCP Cloud Logging structured logs -->
+        <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <!-- GCP Cloud Logging expects 'severity' field -->
+                <fieldNames>
+                    <level>severity</level>
+                    <timestamp>timestamp</timestamp>
+                </fieldNames>
+                <!-- Include MDC context (useful for traceId, userId, etc.) -->
+                <includeMdcKeyName>traceId</includeMdcKeyName>
+                <includeMdcKeyName>userId</includeMdcKeyName>
+                <includeMdcKeyName>tenantId</includeMdcKeyName>
+                <includeMdcKeyName>testRunId</includeMdcKeyName>
+                <!-- Custom fields -->
+                <customFields>{"service":"${APP_NAME}","environment":"production"}</customFields>
+                <!-- Include stack traces for errors -->
+                <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                    <maxDepthPerThrowable>30</maxDepthPerThrowable>
+                    <maxLength>2048</maxLength>
+                    <shortenedClassNameLength>20</shortenedClassNameLength>
+                    <rootCauseFirst>true</rootCauseFirst>
+                </throwableConverter>
+            </encoder>
+        </appender>
+
+        <!-- Application code: INFO for production -->
+        <logger name="com.ai2qa" level="INFO"/>
+
+        <!-- Framework loggers: WARN in production to reduce noise -->
+        <logger name="org.springframework" level="WARN"/>
+        <logger name="org.springframework.web" level="WARN"/>
+        <logger name="org.springframework.security" level="WARN"/>
+        <logger name="org.hibernate" level="WARN"/>
+        <logger name="org.hibernate.SQL" level="WARN"/>
+        <logger name="org.apache" level="WARN"/>
+        <logger name="com.zaxxer.hikari" level="WARN"/>
+        <logger name="io.netty" level="WARN"/>
+
+        <!-- Silence noisy libraries -->
+        <logger name="org.springframework.boot.actuate" level="WARN"/>
+        <logger name="org.springframework.web.servlet.DispatcherServlet" level="WARN"/>
+
+        <root level="WARN">
+            <appender-ref ref="JSON_CONSOLE"/>
+        </root>
+    </springProfile>
+</configuration>

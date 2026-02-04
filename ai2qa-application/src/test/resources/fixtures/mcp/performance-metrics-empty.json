@@ -1,0 +1,8 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\"success\":false,\"error\":\"Failed to collect performance metrics: empty result from browser\"}"
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+# =============================================================================
+# Worker Profile - Heavyweight service for browser automation
+# Use with: SPRING_PROFILES_ACTIVE=worker,prod
+# =============================================================================
+# This profile is for the worker service that handles:
+# - Browser automation with Puppeteer/Playwright
+# - Test execution with AI orchestration
+# - Screenshot and video capture
+# - Artifact upload to GCS
+#
+# Runs as Cloud Run Job - triggered on demand, scales to zero when idle
+# =============================================================================
+
+ai2qa:
+  # Browser automation fully enabled
+  browser:
+    enabled: true
+    engine: ${BROWSER_ENGINE:puppeteer}
+    snapshot-mode: ${SNAPSHOT_MODE:auto}
+    aria-enabled: ${ARIA_SNAPSHOT_ENABLED:true}
+    fallback-enabled: ${BROWSER_FALLBACK:true}
+
+  # MCP bridge enabled for browser control
+  mcp:
+    enabled: true
+    node-path: node
+    server-script: /app/mcp-server/server.js
+    startup-timeout-ms: 60000
+    chrome-args:
+      - "--no-sandbox"
+      - "--disable-gpu"
+      - "--disable-dev-shm-usage"
+      - "--headless=new"
+      - "--disable-software-rasterizer"
+      - "--disable-extensions"
+
+  # Orchestrator settings for test execution
+  orchestrator:
+    max-retries: ${ORCHESTRATOR_MAX_RETRIES:3}
+    max-obstacle-clear-attempts: ${ORCHESTRATOR_MAX_OBSTACLE_CLEAR:3}
+    max-loop-iterations: ${ORCHESTRATOR_MAX_ITERATIONS:50}
+
+  # AI provider settings
+  ai:
+    provider: ${AI_PROVIDER:anthropic}
+    temperature: ${AI_TEMPERATURE:0.2}
+    anthropic:
+      api-key: ${ANTHROPIC_API_KEY:}
+      model: ${ANTHROPIC_MODEL:claude-haiku-4-5-20251001}
+      fallback-model: ${ANTHROPIC_FALLBACK_MODEL:claude-sonnet-4-5-20250929}
+
+  # Rate limiting disabled for workers (API handles this)
+  rate-limit:
+    enabled: false
+
+  # Concurrent limit check only (not enforcement)
+  concurrent-limit:
+    enabled: true
+
+  # Email disabled (API handles notifications)
+  email:
+    enabled: false
+
+# Server not used in job mode, but keep for health checks
+server:
+  port: 8080
+  shutdown: graceful
+
+# Extended timeouts for long-running browser operations
+spring:
+  task:
+    execution:
+      pool:
+        core-size: 2
+        max-size: 4
+        queue-capacity: 10
+      shutdown:
+        await-termination: true
+        await-termination-period: 5m
+
+# Logging - detailed for debugging browser issues
+logging:
+  level:
+    com.ai2qa: DEBUG
+    com.ai2qa.mcp: DEBUG
+    com.ai2qa.orchestrator: DEBUG
+    org.springframework: WARN

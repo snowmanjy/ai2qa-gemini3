@@ -1,0 +1,210 @@
+# =============================================================================
+# Production Configuration - Cloud Run + Cloud SQL
+# =============================================================================
+
+spring:
+  # Cloud SQL Connection via Socket Factory (No IP allowlist needed)
+  # Socket factory params MUST be in URL - HikariCP data-source-properties doesn't pass them reliably
+  datasource:
+    url: jdbc:postgresql:///${CLOUD_SQL_DATABASE:ai2qa}?socketFactory=com.google.cloud.sql.postgres.SocketFactory&cloudSqlInstance=${CLOUD_SQL_INSTANCE}&enableIamAuth=${CLOUD_SQL_IAM_AUTH:false}
+    username: ${CLOUD_SQL_USER:ai2qa}
+    password: ${CLOUD_SQL_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      # Scaled for 100 concurrent users (was 10, now 30)
+      maximum-pool-size: 30
+      minimum-idle: 5
+      connection-timeout: 10000   # Fail faster (was 30s)
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  # JPA Production Settings
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+    show-sql: false
+    open-in-view: false
+
+  # Flyway - Validate migrations only in prod
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    validate-on-migrate: true
+
+  # Redis - Cloud Memorystore or external Redis
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      ssl:
+        enabled: ${REDIS_SSL_ENABLED:false}
+
+  # Spring AI - Vertex AI (uses ADC in Cloud Run)
+  ai:
+    vertex:
+      ai:
+        gemini:
+          project-id: ${GOOGLE_CLOUD_PROJECT}
+          location: ${VERTEX_AI_LOCATION:us-central1}
+          chat:
+            options:
+              model: ${VERTEX_AI_MODEL:gemini-2.5-flash}
+              temperature: ${AI_TEMPERATURE:0.2}
+
+# Resilience4j Circuit Breaker Configuration (Production)
+# More conservative settings for production stability
+resilience4j:
+  circuitbreaker:
+    instances:
+      aiService:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 20
+        failureRateThreshold: 50
+        waitDurationInOpenState: 120s
+        permittedNumberOfCallsInHalfOpenState: 5
+        minimumNumberOfCalls: 10
+        recordExceptions:
+          - java.util.concurrent.TimeoutException
+          - java.net.SocketTimeoutException
+          - java.io.IOException
+        ignoreExceptions:
+          - java.lang.IllegalArgumentException
+  timelimiter:
+    instances:
+      aiService:
+        timeoutDuration: 300s
+        cancelRunningFuture: true
+
+# Server
+server:
+  port: 8080
+  shutdown: graceful
+
+# CORS Configuration for Production
+app:
+  cors:
+    allowed-origins: https://ai2qa.com,https://www.ai2qa.com,https://ai2qa-frontend-ai2qa-484417.a.run.app
+
+# Actuator - Secure endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
+  health:
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
+
+# Logging - JSON format for Cloud Logging
+logging:
+  level:
+    com.ai2qa: INFO
+    org.springframework: WARN
+  pattern:
+    console: '{"timestamp":"%d{ISO8601}","level":"%level","logger":"%logger","message":"%msg"}%n'
+
+# Stripe Configuration
+stripe:
+  api-key: ${STRIPE_API_KEY}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET}
+
+# Clerk Configuration (for webhooks)
+clerk:
+  webhook-secret: ${CLERK_WEBHOOK_SECRET:}
+
+# Email Configuration (Gmail SMTP)
+spring.mail:
+  host: smtp.gmail.com
+  port: 587
+  username: admin@ai2qa.com
+  password: ${GMAIL_APP_PASSWORD}
+  properties:
+    mail:
+      smtp:
+        auth: true
+        starttls:
+          enable: true
+        # Timeout settings to prevent "Broken pipe" errors
+        connectiontimeout: 10000
+        timeout: 10000
+        writetimeout: 10000
+
+# Google Cloud Storage (Artifacts)
+gcp:
+  storage:
+    bucket-name: ${GCP_STORAGE_BUCKET:ai2qa-484417-artifacts}
+
+# Ai2QA Production Settings
+ai2qa:
+  # AI Provider - Anthropic for production
+  ai:
+    provider: ${AI_PROVIDER:anthropic}
+    temperature: ${AI_TEMPERATURE:0.2}
+    anthropic:
+      api-key: ${ANTHROPIC_API_KEY}
+      model: ${ANTHROPIC_MODEL:claude-haiku-4-5-20251001}
+      fallback-model: ${ANTHROPIC_FALLBACK_MODEL:claude-sonnet-4-5-20250929}
+
+  mcp:
+    node-path: node
+    server-script: /app/mcp-server/server.js
+    startup-timeout-ms: 60000
+    timeout-ms: 60000                    # Default timeout for MCP tool calls (60s)
+    context-creation-timeout-ms: 120000  # Longer timeout for browser/createContext (120s for Chrome startup)
+    chrome-args:
+      - "--no-sandbox"
+      - "--disable-gpu"
+      - "--disable-dev-shm-usage"
+      - "--headless=new"
+
+  cache:
+    encryption-key: ${CACHE_ENCRYPTION_KEY}
+
+  # Email notifications
+  email:
+    from: Ai2QA <admin@ai2qa.com>
+    enabled: ${EMAIL_NOTIFICATIONS_ENABLED:true}
+
+  # Admin alerts
+  admin:
+    alert-email: ${AI2QA_ADMIN_ALERT_EMAIL:admin@ai2qa.com}
+    alerts-enabled: ${AI2QA_ADMIN_ALERTS_ENABLED:true}
+
+  # Analytics (PostHog)
+  analytics:
+    enabled: ${POSTHOG_ENABLED:true}
+    api-key: ${POSTHOG_API_KEY}
+    host: ${POSTHOG_HOST:https://app.posthog.com}
+
+  # Security settings
+  security:
+    target:
+      blacklist: ${AI2QA_SECURITY_TARGET_BLACKLIST:ai2qa.com,localhost,127.0.0.1,checksum.ai,copado.com,.gov,.mil,.edu}
+
+  # Rate limiting
+  rate-limit:
+    enabled: true
+    user-per-minute: ${RATE_LIMIT_USER_PER_MINUTE:10}
+    ip-per-hour: ${RATE_LIMIT_IP_PER_HOUR:30}
+
+  # Concurrent limits - scaled for 100 users
+  concurrent-limit:
+    enabled: true
+    max-per-user: ${CONCURRENT_LIMIT_MAX_PER_USER:3}
+    max-global: ${CONCURRENT_LIMIT_MAX_GLOBAL:80}
+
+  # Data retention
+  retention:
+    days: ${ARTIFACT_RETENTION_DAYS:90}

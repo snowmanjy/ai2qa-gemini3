@@ -1,0 +1,79 @@
+#!/bin/bash
+#
+# Pre-commit hook: Fast checks before commit (no tests - those run in CI)
+#
+# Installation:
+#   cp scripts/hooks/pre-commit .git/hooks/pre-commit
+#   chmod +x .git/hooks/pre-commit
+#
+# To bypass (emergency only):
+#   git commit --no-verify
+#
+
+set -e
+
+echo "╔════════════════════════════════════════════════════════════╗"
+echo "║              PRE-COMMIT: Quick Code Checks                 ║"
+echo "╚════════════════════════════════════════════════════════════╝"
+
+# Check if we're in the right directory (has pom.xml or is frontend)
+if [ ! -f "pom.xml" ] && [ ! -f "frontend/package.json" ]; then
+    echo "Error: Not in project root. Run from AI2QA directory."
+    exit 1
+fi
+
+# Only compile if Java files changed (fast check, no tests)
+if git diff --cached --name-only | grep -q "\.java$"; then
+    echo ""
+    echo "Java files changed - compiling..."
+    if [ -f "pom.xml" ]; then
+        if mvn compile -q -DskipTests 2>/dev/null; then
+            echo "✅ Java compilation successful"
+        else
+            echo "❌ Compilation failed. Fix errors before committing."
+            exit 1
+        fi
+    fi
+fi
+
+# Only lint if TypeScript/JS files changed
+if git diff --cached --name-only | grep -qE "\.(ts|tsx|js|jsx)$"; then
+    echo ""
+    echo "TypeScript files changed - checking types..."
+    if [ -d "frontend" ] && [ -f "frontend/package.json" ]; then
+        cd frontend
+        if npm run type-check 2>/dev/null || npx tsc --noEmit 2>/dev/null; then
+            echo "✅ TypeScript check passed"
+        else
+            echo "⚠️  TypeScript errors (non-blocking)"
+        fi
+        cd ..
+    fi
+fi
+
+# Check for common AI-generated code mistakes
+echo "Running AI code quality checks..."
+
+# Check for Lombok annotations (not allowed per CLAUDE.md)
+if grep -rn "@Slf4j\|@Data\|@AllArgsConstructor\|@NoArgsConstructor\|@Builder" --include="*.java" ai2qa-*/src/main/java 2>/dev/null; then
+    echo ""
+    echo "⚠️  Warning: Lombok annotations detected. Per CLAUDE.md, avoid Lombok with Java 21+."
+    echo "   Consider removing these annotations."
+    echo ""
+fi
+
+# Check for 'Object' as variable type (type safety issue)
+if grep -rn "Object [a-z]" --include="*.java" ai2qa-*/src/main/java 2>/dev/null | grep -v "// OK:" | head -5; then
+    echo ""
+    echo "⚠️  Warning: 'Object' used as variable type. Consider using specific types."
+    echo ""
+fi
+
+# Check for null returns (should use Optional)
+if grep -rn "return null;" --include="*.java" ai2qa-*/src/main/java 2>/dev/null | head -5; then
+    echo ""
+    echo "⚠️  Warning: 'return null' found. Consider using Optional<T> instead."
+    echo ""
+fi
+
+echo "✅ Pre-commit checks complete. Proceeding with commit."

@@ -1,0 +1,37 @@
+# =============================================================================
+# Ai2QA Hackathon Docker Compose - Google DeepMind Gemini 3 Hackathon
+# Uses H2 in-memory database for zero setup
+# =============================================================================
+
+services:
+  # Ai2QA Application with embedded H2 database
+  ai2qa:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ai2qa-app
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: default
+      # H2 in-memory database (configured in application.yml)
+      # Google Cloud credentials for Vertex AI / Gemini
+      GOOGLE_APPLICATION_CREDENTIALS: /root/.config/gcloud/application_default_credentials.json
+      GOOGLE_CLOUD_PROJECT: ${GOOGLE_CLOUD_PROJECT:-your-gcp-project}
+      # Optional: reCAPTCHA for abuse prevention (disabled by default for local dev)
+      RECAPTCHA_ENABLED: ${RECAPTCHA_ENABLED:-false}
+      # Daily test run cap
+      DAILY_CAP: ${DAILY_CAP:-50}
+    volumes:
+      # Mount gcloud credentials for Vertex AI access
+      - ~/.config/gcloud:/root/.config/gcloud:ro
+    # Resource limits for browser automation
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    stop_grace_period: 10s

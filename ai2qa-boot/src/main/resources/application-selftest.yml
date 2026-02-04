@@ -1,0 +1,24 @@
+# Self-Test Profile Configuration
+# Use this profile when testing one AI2QA instance against another
+# (e.g., 192.168.1.1 testing 192.168.1.2)
+#
+# Activate with: --spring.profiles.active=selftest
+# Or: export SPRING_PROFILES_ACTIVE=selftest
+
+ai2qa:
+  security:
+    target:
+      # Add target IPs/domains to allowlist (comma-separated)
+      # Examples:
+      #   - Single IP: 192.168.1.2
+      #   - Multiple IPs: 192.168.1.2,192.168.1.3
+      #   - Domain: qa.ai2qa.com
+      #   - Subdomain pattern: .local (matches myhost.local)
+      allowlist: ${AI2QA_SECURITY_TARGET_ALLOWLIST:localhost}
+      # Enable self-test mode to allow testing allowlisted targets
+      self-test-enabled: true
+
+# Logging - increase visibility for debugging
+logging:
+  level:
+    com.ai2qa.application.security: DEBUG
