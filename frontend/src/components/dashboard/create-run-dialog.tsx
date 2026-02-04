@@ -1,18 +1,16 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Plus, Loader2, Paperclip, FileText, Lock, HelpCircle } from "lucide-react"
-import { api, extractPlan } from "@/lib/api"
+import { Plus, Loader2, ChevronDown, ChevronRight } from "lucide-react"
+import { api } from "@/lib/api"
 import { toast } from "sonner"
 import { CreateTestRunRequest, Persona } from "@/types"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { PersonaSelector } from "./create-run/persona-selector"
 import { capture, captureException } from "@/lib/analytics"
 
@@ -20,14 +18,7 @@ interface CreateRunDialogProps {
     onSuccess: () => void
 }
 
-const PERSONA_TEMPLATES: Record<Persona, string> = {
-    STANDARD: "Thoroughly explore the page by scrolling, clicking tabs, expanding sections, and opening menus to discover all content. Document each state with screenshots and verify elements load correctly.",
-    CHAOS: "Thoroughly explore the page by scrolling, clicking tabs, and expanding sections. Then randomly interact with every discovered element — test edge cases, rapid clicks, unusual inputs — and observe for UI errors or crashes.",
-    HACKER: "Thoroughly explore the page by scrolling, clicking tabs, and expanding sections to discover all input fields. For each input found (search bars, text fields, forms), probe for XSS and injection vulnerabilities using safe test payloads. Skip any expected inputs that don't exist on the page.",
-    PERFORMANCE_HAWK: "Analyze page load performance by measuring time to interactive, Core Web Vitals (LCP, CLS, INP), and resource loading. Identify large images, render-blocking resources, and excessive API calls. Report any page loads over 3 seconds or UI interactions that feel sluggish."
-}
-
-const MAX_FILE_SIZE = 2 * 1024 * 1024 // 2MB
+const MAX_CONTEXT_LENGTH = 200
 
 /**
  * Dialog for creating new test runs.
@@ -38,11 +29,9 @@ export function CreateRunDialog({ onSuccess }: CreateRunDialogProps) {
     const [open, setOpen] = useState(false)
     const [url, setUrl] = useState("")
     const [persona, setPersona] = useState<Persona>('STANDARD')
-    const [goals, setGoals] = useState(PERSONA_TEMPLATES.STANDARD)
-    const [isGoalsModified, setIsGoalsModified] = useState(false)
+    const [additionalContext, setAdditionalContext] = useState("")
+    const [showContext, setShowContext] = useState(false)
     const [submitting, setSubmitting] = useState(false)
-    const [uploading, setUploading] = useState(false)
-    const fileInputRef = useRef<HTMLInputElement>(null)
 
     // Get reCAPTCHA token (returns undefined if reCAPTCHA is not configured)
     const getReCaptchaToken = useCallback(async (): Promise<string | undefined> => {
@@ -57,77 +46,6 @@ export function CreateRunDialog({ onSuccess }: CreateRunDialogProps) {
         }
     }, [executeRecaptcha])
 
-    // Auto-fill logic
-    useEffect(() => {
-        if (!isGoalsModified) {
-            setGoals(PERSONA_TEMPLATES[persona])
-        }
-    }, [persona, isGoalsModified])
-
-    const handleGoalsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setGoals(e.target.value)
-        setIsGoalsModified(true)
-    }
-
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-        if (!file) return
-
-        // Validate file size
-        if (file.size > MAX_FILE_SIZE) {
-            toast.error("File is too large. Please reduce it to under 2MB.")
-            if (fileInputRef.current) fileInputRef.current.value = ""
-            return
-        }
-
-        setUploading(true)
-        toast.info("AI is analyzing your plan...")
-        try {
-            const extractedGoals = await extractPlan(file)
-            if (extractedGoals && extractedGoals.length > 0) {
-                // If user hasn't modified the default template, REPLACE it
-                // If user has customized goals, APPEND to them
-                const newGoals = extractedGoals.join("\n")
-                let finalGoals: string
-                if (isGoalsModified) {
-                    // User has custom goals - append
-                    finalGoals = goals.trim() ? `${goals}\n${newGoals}` : newGoals
-                } else {
-                    // Default template - replace entirely
-                    finalGoals = newGoals
-                }
-                setGoals(finalGoals)
-                setIsGoalsModified(true)
-
-                // Count total goals and warn if exceeds 10
-                const totalGoals = finalGoals.split("\n").filter(g => g.trim()).length
-                if (totalGoals > 10) {
-                    toast.warning(`You have ${totalGoals} goals. Consider keeping it under 10 for best results.`)
-                } else {
-                    toast.success(`Extracted ${extractedGoals.length} goals from file`)
-                }
-
-                // Track file upload event
-                capture('test_plan_file_uploaded', {
-                    file_type: file.type,
-                    file_size_bytes: file.size,
-                    goals_extracted_count: extractedGoals.length,
-                });
-            } else {
-                toast.warning("No goals could be extracted from the file")
-            }
-        } catch (error: unknown) {
-            console.error(error)
-            const err = error as { response?: { data?: { detail?: string } }; message?: string }
-            const message = err.response?.data?.detail || "Failed to extract goals from file"
-            toast.error(message)
-            captureException(error instanceof Error ? error : new Error(String(error)));
-        } finally {
-            setUploading(false)
-            if (fileInputRef.current) fileInputRef.current.value = ""
-        }
-    }
-
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault()
         if (!url) return
@@ -139,9 +57,10 @@ export function CreateRunDialog({ onSuccess }: CreateRunDialogProps) {
 
             const payload: CreateTestRunRequest = {
                 targetUrl: url,
-                goals: goals.split("\n").filter(g => g.trim()), // Split by lines, filter empty
+                goals: [], // No longer using goals array
                 persona,
                 recaptchaToken,
+                additionalContext: additionalContext.trim() || undefined,
             }
 
             const res = await api.post('/test-runs', payload)
@@ -150,15 +69,15 @@ export function CreateRunDialog({ onSuccess }: CreateRunDialogProps) {
             capture('test_run_created', {
                 target_url: url,
                 persona: persona,
-                goals_count: payload.goals.length,
+                has_additional_context: !!additionalContext.trim(),
             });
 
             setOpen(false)
             // Reset state
             setUrl("")
             setPersona('STANDARD')
-            setIsGoalsModified(false)
-            setGoals(PERSONA_TEMPLATES.STANDARD)
+            setAdditionalContext("")
+            setShowContext(false)
 
             toast.success("Test run started successfully")
             onSuccess()
@@ -242,76 +161,41 @@ export function CreateRunDialog({ onSuccess }: CreateRunDialogProps) {
                         onChange={(val) => setPersona(val as Persona)}
                     />
 
+                    {/* Collapsible Additional Context */}
                     <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                            <Label htmlFor="goals">Test Goals</Label>
-                            <div className="flex items-center gap-2">
-                                <input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    accept=".pdf,.xlsx,.xls,.csv,.txt,application/pdf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain"
-                                    onChange={handleFileUpload}
-                                    className="hidden"
-                                    id="file-upload"
-                                    aria-describedby="file-help"
+                        <button
+                            type="button"
+                            onClick={() => setShowContext(!showContext)}
+                            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                            {showContext ? (
+                                <ChevronDown className="h-4 w-4" />
+                            ) : (
+                                <ChevronRight className="h-4 w-4" />
+                            )}
+                            Additional Context (optional)
+                        </button>
+                        {showContext && (
+                            <div className="space-y-1">
+                                <Input
+                                    id="additionalContext"
+                                    value={additionalContext}
+                                    onChange={(e) => setAdditionalContext(e.target.value.slice(0, MAX_CONTEXT_LENGTH))}
+                                    placeholder="e.g., Focus on checkout flow, test mobile viewport..."
+                                    maxLength={MAX_CONTEXT_LENGTH}
                                 />
-                                <Button
-                                    type="button"
-                                    variant="secondary"
-                                    size="sm"
-                                    onClick={() => fileInputRef.current?.click()}
-                                    disabled={uploading}
-                                    aria-label="Import test goals from file (PDF, Excel, CSV, TXT)"
-                                >
-                                    {uploading ? (
-                                        <Loader2 className="mr-2 h-3 w-3 animate-spin" aria-hidden="true" />
-                                    ) : (
-                                        <Paperclip className="mr-2 h-3 w-3" aria-hidden="true" />
-                                    )}
-                                    {uploading ? "Analyzing..." : "Import from File"}
-                                </Button>
-                            </div>
-                        </div>
-                        <Textarea
-                            id="goals"
-                            value={goals}
-                            onChange={handleGoalsChange}
-                            placeholder="Describe what to test..."
-                            className="min-h-[120px]"
-                            aria-describedby="file-help"
-                        />
-                        <p id="file-help" className="text-xs text-muted-foreground flex items-center gap-1">
-                            <FileText className="h-3 w-3" aria-hidden="true" />
-                            Supports PDF, Excel, CSV, TXT. Max 2MB.
-                        </p>
-                        <p className="text-xs text-muted-foreground italic">
-                            Using Google Sheets? Download as .xlsx first.
-                        </p>
-                        <div className="flex items-start gap-2 mt-2 p-2 rounded-md bg-muted/50 border border-border">
-                            <Lock className="h-3.5 w-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
-                            <div className="flex items-center gap-1">
-                                <p className="text-xs text-muted-foreground">
-                                    <span className="font-medium">Security Note:</span> This file is processed in-memory for AI analysis only, and is never saved to our servers.
+                                <p className="text-xs text-muted-foreground text-right">
+                                    {additionalContext.length}/{MAX_CONTEXT_LENGTH}
                                 </p>
-                                <TooltipProvider>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <HelpCircle className="h-3 w-3 text-muted-foreground/70 cursor-help flex-shrink-0" />
-                                        </TooltipTrigger>
-                                        <TooltipContent side="top" className="max-w-xs">
-                                            <p className="text-xs">We use a stateless extraction pipeline. Once the goals are extracted, the file binary is wiped from RAM.</p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
                             </div>
-                        </div>
+                        )}
                     </div>
                     </div>
 
                     <div className="flex justify-end pt-4 border-t mt-4">
                         <Button
                             type="submit"
-                            disabled={submitting || uploading}
+                            disabled={submitting}
                         >
                             {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Start Run

@@ -1,7 +1,7 @@
 #!/bin/bash
 # =============================================================================
 # GCP Infrastructure Setup - Phase 2: Core Infrastructure
-# VPC, Cloud SQL, Redis, Storage, Artifact Registry
+# VPC, Cloud SQL, Storage, Artifact Registry
 # =============================================================================
 
 set -e
@@ -85,28 +85,7 @@ CLOUD_SQL_INSTANCE=$(gcloud sql instances describe ai2qa-db --format="value(conn
 echo "Cloud SQL Instance: $CLOUD_SQL_INSTANCE"
 
 # -----------------------------------------------------------------------------
-# 2.4 Memorystore Redis
-# -----------------------------------------------------------------------------
-echo ""
-echo ">>> Creating Memorystore Redis (this takes 5-10 minutes)..."
-
-if gcloud redis instances describe ai2qa-redis --region=$REGION --quiet 2>/dev/null; then
-  echo "Redis instance already exists, skipping creation..."
-else
-  gcloud redis instances create ai2qa-redis \
-    --size=1 \
-    --region=$REGION \
-    --network=projects/$PROJECT_ID/global/networks/ai2qa-vpc \
-    --redis-version=redis_7_0 \
-    --tier=basic \
-    --quiet
-fi
-
-REDIS_HOST=$(gcloud redis instances describe ai2qa-redis --region=$REGION --format="value(host)")
-echo "Redis Host: $REDIS_HOST"
-
-# -----------------------------------------------------------------------------
-# 2.5 Cloud Storage
+# 2.4 Cloud Storage
 # -----------------------------------------------------------------------------
 echo ""
 echo ">>> Creating Cloud Storage Bucket..."
@@ -116,7 +95,7 @@ gcloud storage buckets create gs://${PROJECT_ID}-artifacts \
   --quiet 2>/dev/null || echo "Bucket may already exist, continuing..."
 
 # -----------------------------------------------------------------------------
-# 2.6 Artifact Registry
+# 2.5 Artifact Registry
 # -----------------------------------------------------------------------------
 echo ""
 echo ">>> Creating Artifact Registry..."
@@ -127,7 +106,7 @@ gcloud artifacts repositories create ai2qa \
   --quiet 2>/dev/null || echo "Repository may already exist, continuing..."
 
 # -----------------------------------------------------------------------------
-# 2.7 Grant ALL required IAM permissions (comprehensive)
+# 2.6 Grant ALL required IAM permissions (comprehensive)
 # -----------------------------------------------------------------------------
 echo ""
 echo ">>> Granting ALL required IAM permissions..."
@@ -177,7 +156,6 @@ APP_ROLES=(
   "roles/logging.logWriter"
   "roles/cloudtrace.agent"
   "roles/errorreporting.writer"
-  "roles/redis.editor"
   "roles/run.invoker"
   "roles/run.developer"
 )
@@ -199,13 +177,12 @@ echo "Infrastructure Summary:"
 echo "  VPC Network: ai2qa-vpc"
 echo "  VPC Connector: ai2qa-connector"
 echo "  Cloud SQL Instance: $CLOUD_SQL_INSTANCE"
-echo "  Redis Host: $REDIS_HOST"
 echo "  Storage Bucket: gs://${PROJECT_ID}-artifacts"
 echo "  Artifact Registry: ${REGION}-docker.pkg.dev/${PROJECT_ID}/ai2qa"
 echo ""
 echo "IAM Permissions Configured:"
 echo "  Cloud Build SAs: storage, logging, artifactregistry, run.admin, iam.serviceAccountUser"
 echo "  Serverless Robot: artifactregistry.reader"
-echo "  Application SA: cloudsql, storage, secrets, logging, tracing, redis, run"
+echo "  Application SA: cloudsql, storage, secrets, logging, tracing, run"
 echo ""
 echo "Next: Run 04-setup-workload-identity.sh"

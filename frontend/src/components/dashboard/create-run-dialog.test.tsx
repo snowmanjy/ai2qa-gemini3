@@ -4,9 +4,6 @@ import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { server } from '@/__tests__/mocks/server'
 
-import '@/__tests__/mocks/clerk'
-import '@/__tests__/mocks/analytics'
-
 import { CreateRunDialog } from './create-run-dialog'
 
 const mockOnSuccess = vi.fn()

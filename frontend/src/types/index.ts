@@ -42,6 +42,7 @@ export interface CreateTestRunRequest {
     persona: Persona;
     cookiesJson?: string;
     recaptchaToken?: string;
+    additionalContext?: string;
 }
 
 // Saved Test Plans

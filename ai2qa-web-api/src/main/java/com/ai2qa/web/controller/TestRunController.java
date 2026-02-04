@@ -18,6 +18,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 
@@ -93,10 +95,16 @@ public class TestRunController {
         log.info("Creating test run: targetUrl={}, persona={}",
                 request.targetUrl(), request.persona());
 
+        // Build effective goals: if additionalContext provided, include it as context for the AI
+        List<String> effectiveGoals = new ArrayList<>(request.goals() != null ? request.goals() : List.of());
+        if (request.additionalContext() != null && !request.additionalContext().isBlank()) {
+            effectiveGoals.add(0, "[User Context]: " + request.additionalContext().trim());
+        }
+
         TestRunView testRun = testRunService.createTestRun(
                 tenantId,
                 request.targetUrl(),
-                request.goals(),
+                effectiveGoals,
                 request.persona(),
                 request.cookiesJson(),
                 false,  // No email notifications

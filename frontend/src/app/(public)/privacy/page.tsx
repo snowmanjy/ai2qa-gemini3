@@ -36,10 +36,8 @@ export default function PrivacyPolicyPage() {
                         When you create an account with Ai2QA, we collect:
                     </p>
                     <ul className="list-disc list-inside text-foreground/80 mt-4 space-y-2">
-                        <li>Email address</li>
-                        <li>Name</li>
-                        <li>Organization name (optional)</li>
-                        <li>Authentication data via Clerk (our identity provider)</li>
+                        <li>Email address (optional - for notifications)</li>
+                        <li>IP address (for rate limiting)</li>
                     </ul>
 
                     <h3 className="text-xl font-medium mt-6 mb-3 text-foreground/90">Test Run Data</h3>
@@ -53,20 +51,13 @@ export default function PrivacyPolicyPage() {
                         <li>Test results and execution logs</li>
                     </ul>
 
-                    <h3 className="text-xl font-medium mt-6 mb-3 text-foreground/90">Payment Information</h3>
-                    <p className="text-foreground/80">
-                        Payment processing is handled by Stripe. SameThoughts, Inc. does not store credit card numbers
-                        or sensitive payment details directly.
-                    </p>
-
                     <h2 className="text-2xl font-semibold mt-8 mb-4">2. How We Use Your Information</h2>
                     <p className="text-foreground/80">
                         We use the information we collect to:
                     </p>
                     <ul className="list-disc list-inside text-foreground/80 mt-4 space-y-2">
                         <li>Provide and improve the Ai2QA service</li>
-                        <li>Process credit purchases and payments</li>
-                        <li>Send test completion notifications and reports</li>
+                        <li>Send test completion notifications (if email provided)</li>
                         <li>Provide customer support</li>
                         <li>Detect and prevent fraud or abuse</li>
                     </ul>
@@ -76,8 +67,7 @@ export default function PrivacyPolicyPage() {
                         We use cookies and similar tracking technologies to operate and improve our Service. The types of cookies we use include:
                     </p>
                     <ul className="list-disc list-inside text-foreground/80 mt-4 space-y-2">
-                        <li><strong>Essential Cookies:</strong> Required for authentication, security, and core functionality. These cannot be disabled.</li>
-                        <li><strong>Analytics Cookies:</strong> Help us understand how visitors interact with our Service (via PostHog). You may opt out of these.</li>
+                        <li><strong>Essential Cookies:</strong> Required for security and core functionality. These cannot be disabled.</li>
                         <li><strong>Preference Cookies:</strong> Remember your settings and preferences for a better experience.</li>
                     </ul>
                     <p className="text-foreground/80 mt-4">
@@ -121,10 +111,8 @@ export default function PrivacyPolicyPage() {
                         Ai2QA uses the following third-party services (&quot;Subprocessors&quot;) to provide our Service:
                     </p>
                     <ul className="list-disc list-inside text-foreground/80 mt-4 space-y-2">
-                        <li><strong>Clerk</strong> (USA) - Authentication and identity management</li>
-                        <li><strong>Stripe</strong> (USA) - Payment processing</li>
                         <li><strong>Google Cloud Platform</strong> (USA) - Infrastructure, storage, and AI services</li>
-                        <li><strong>PostHog</strong> (USA/EU) - Product analytics and usage tracking</li>
+                        <li><strong>Google reCAPTCHA</strong> (USA) - Abuse prevention</li>
                     </ul>
                     <p className="text-foreground/80 mt-4">
                         Each Subprocessor is contractually obligated to protect your data in accordance with applicable data protection laws. We maintain an up-to-date list of Subprocessors and will notify customers of any changes.

@@ -9,9 +9,10 @@ These scripts set up the GCP infrastructure for AI2QA using a serverless-first a
 - **Cloud Run (API)**: Lightweight service (1GB RAM) for HTTP requests
 - **Cloud Run Jobs (Worker)**: Heavyweight service (4GB RAM) for browser automation
 - **Cloud SQL**: PostgreSQL 15 database (db-f1-micro, ~$10/month)
-- **Memorystore Redis**: Session/queue storage (1GB, ~$35/month) - Optional for hackathon
 - **Cloud Storage**: Screenshot and report artifacts
 - **Workload Identity Federation**: Keyless GitHub Actions deployment
+
+> **Note**: This hackathon edition uses in-memory queues instead of Redis for simplicity.
 
 ## Prerequisites
 
@@ -88,9 +89,8 @@ gcloud secrets versions access latest --secret=recaptcha-secret-key
 | Cloud Run (API) | ~$20-50 |
 | Cloud Run Jobs (Worker) | ~$50-150 |
 | Cloud SQL (db-f1-micro) | ~$10 |
-| Memorystore Redis (1GB) | ~$35 (optional) |
 | Cloud Storage | ~$2 |
-| **Total (Low Traffic)** | **~$85-150** |
+| **Total (Low Traffic)** | **~$80-210** |
 
 ## Local Development (No GCP Required)
 
@@ -103,7 +103,7 @@ For hackathon judges, run locally without GCP:
 
 This uses:
 - H2 in-memory database (no PostgreSQL)
-- In-memory queues (no Redis)
+- In-memory queues
 - Local Chrome automation
 
 ## Troubleshooting
