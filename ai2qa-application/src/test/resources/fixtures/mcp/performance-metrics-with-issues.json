@@ -1,0 +1,8 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\"success\":true,\"webVitals\":{\"lcp\":4500.0,\"cls\":0.35,\"fcp\":2800.0,\"ttfb\":1200.0,\"fid\":350.0},\"navigation\":{\"pageLoad\":6500.0,\"domContentLoaded\":4000.0,\"dnsLookup\":150.0,\"tcpConnect\":200.0,\"sslHandshake\":300.0,\"ttfb\":1200.0,\"domInteractive\":3500.0,\"domComplete\":5800.0},\"resources\":[],\"totalResources\":0,\"totalTransferSizeKb\":0,\"issues\":[{\"severity\":\"CRITICAL\",\"category\":\"LCP\",\"message\":\"Largest Contentful Paint is 4500ms (poor, threshold: >4000ms)\",\"recommendation\":\"Optimize images, reduce render-blocking resources, improve server response time\"},{\"severity\":\"CRITICAL\",\"category\":\"CLS\",\"message\":\"Cumulative Layout Shift is 0.35 (poor, threshold: >0.25)\",\"recommendation\":\"Set explicit dimensions on images and embeds, avoid inserting content above existing content\"},{\"severity\":\"WARNING\",\"category\":\"TTFB\",\"message\":\"Time to First Byte is 1200ms (needs improvement, threshold: >800ms)\",\"recommendation\":\"Optimize server response time, use CDN, implement caching\"}],\"collectedAt\":\"2024-01-15T10:30:00.000Z\"}"
+    }
+  ]
+}

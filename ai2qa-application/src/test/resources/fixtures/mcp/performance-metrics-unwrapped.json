@@ -1,0 +1,38 @@
+{
+  "success": true,
+  "webVitals": {
+    "lcp": 1250.5,
+    "cls": 0.05,
+    "fcp": 800.3,
+    "ttfb": 120.7,
+    "fid": 15.2
+  },
+  "navigation": {
+    "pageLoad": 2100.5,
+    "domContentLoaded": 1500.3,
+    "dnsLookup": 25.1,
+    "tcpConnect": 45.2,
+    "sslHandshake": 80.5,
+    "ttfb": 120.7,
+    "domInteractive": 1200.4,
+    "domComplete": 1900.8
+  },
+  "resources": [
+    {
+      "name": "https://example.com/main.js",
+      "type": "script",
+      "durationMs": 350.5,
+      "transferSizeKb": 125.3
+    },
+    {
+      "name": "https://example.com/styles.css",
+      "type": "stylesheet",
+      "durationMs": 120.2,
+      "transferSizeKb": 45.8
+    }
+  ],
+  "totalResources": 2,
+  "totalTransferSizeKb": 171.1,
+  "issues": [],
+  "collectedAt": "2024-01-15T10:30:00.000Z"
+}

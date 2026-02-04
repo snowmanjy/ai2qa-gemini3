@@ -1,0 +1,53 @@
+# =============================================================================
+# API Profile - Lightweight service for handling HTTP requests
+# Use with: SPRING_PROFILES_ACTIVE=api,prod
+# =============================================================================
+# This profile is for the API service that handles:
+# - User authentication/authorization
+# - Test creation and management
+# - Results retrieval
+# - Webhooks (Stripe, etc.)
+#
+# Browser automation is DISABLED - tests are queued for worker processing
+# =============================================================================
+
+ai2qa:
+  # Disable browser automation in API service
+  browser:
+    enabled: false
+    engine: none
+
+  # MCP bridge disabled (no browser = no MCP needed)
+  mcp:
+    enabled: false
+
+  # API handles rate limiting for incoming requests
+  rate-limit:
+    enabled: true
+    user-per-minute: ${RATE_LIMIT_USER_PER_MINUTE:10}
+    ip-per-hour: ${RATE_LIMIT_IP_PER_HOUR:30}
+
+  # Concurrent limit tracking (API tracks, workers execute)
+  concurrent-limit:
+    enabled: true
+    max-per-user: ${CONCURRENT_LIMIT_MAX_PER_USER:2}
+    max-global: ${CONCURRENT_LIMIT_MAX_GLOBAL:30}
+
+  # Email notifications enabled for API service
+  email:
+    enabled: ${EMAIL_NOTIFICATIONS_ENABLED:true}
+
+# Server optimized for quick API responses
+server:
+  port: 8080
+  shutdown: graceful
+  tomcat:
+    connection-timeout: 5s
+    keep-alive-timeout: 30s
+
+# Logging - minimal for API
+logging:
+  level:
+    com.ai2qa: INFO
+    com.ai2qa.web: DEBUG
+    org.springframework.web: WARN
