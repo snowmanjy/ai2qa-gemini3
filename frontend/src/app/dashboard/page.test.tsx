@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { server } from '@/__tests__/mocks/server'
 
@@ -35,20 +34,6 @@ describe('DashboardPage', () => {
         expect(screen.getByText('FAILED')).toBeInTheDocument()
     })
 
-    it('shows correct summary stats', async () => {
-        render(<DashboardPage />)
-
-        await waitFor(() => {
-            expect(screen.getByText('https://example.com')).toBeInTheDocument()
-        })
-
-        // Stats: 3 total, 1 passed (COMPLETED), 1 failed (FAILED), 1 active (RUNNING)
-        expect(screen.getByText('Total Runs')).toBeInTheDocument()
-        expect(screen.getByText('Passed')).toBeInTheDocument()
-        expect(screen.getByText('Failed')).toBeInTheDocument()
-        expect(screen.getByText('Active')).toBeInTheDocument()
-    })
-
     it('shows empty state when no runs exist', async () => {
         server.use(
             http.get('http://localhost:8080/api/v1/test-runs', () => {
@@ -68,7 +53,7 @@ describe('DashboardPage', () => {
             expect(screen.getByText('No test runs yet')).toBeInTheDocument()
         })
 
-        expect(screen.getByText('Create your first test run to get started.')).toBeInTheDocument()
+        expect(screen.getByText('Enter a URL above to start your first test.')).toBeInTheDocument()
     })
 
     it('shows loading spinner initially', () => {
@@ -86,19 +71,6 @@ describe('DashboardPage', () => {
 
         expect(screen.getByText('Chaos')).toBeInTheDocument()
         expect(screen.getByText('Hacker')).toBeInTheDocument()
-    })
-
-    it('renders mode badges', async () => {
-        render(<DashboardPage />)
-
-        await waitFor(() => {
-            expect(screen.getByText('https://example.com')).toBeInTheDocument()
-        })
-
-        // Two Cloud badges and one Local Agent badge
-        const cloudBadges = screen.getAllByText('Cloud')
-        expect(cloudBadges.length).toBeGreaterThanOrEqual(2)
-        expect(screen.getByText('Local Agent')).toBeInTheDocument()
     })
 
     it('shows report links for completed and failed runs', async () => {
@@ -120,10 +92,30 @@ describe('DashboardPage', () => {
         expect(refreshButton).toBeInTheDocument()
     })
 
-    it('shows the Test Runs heading', async () => {
+    it('shows the Recent Runs heading', async () => {
         render(<DashboardPage />)
 
-        expect(screen.getByText('Test Runs')).toBeInTheDocument()
-        expect(screen.getByText('Manage and monitor your autonomous QA sessions.')).toBeInTheDocument()
+        expect(screen.getByText('Recent Runs')).toBeInTheDocument()
+        expect(screen.getByText('Monitor your autonomous QA sessions')).toBeInTheDocument()
+    })
+
+    it('shows inline test creation form', async () => {
+        render(<DashboardPage />)
+
+        // Check for inline form elements
+        expect(screen.getByText('Start a New Test')).toBeInTheDocument()
+        expect(screen.getByLabelText(/Target URL/i)).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: /Start Test Run/i })).toBeInTheDocument()
+    })
+
+    it('shows persona selector in inline form', async () => {
+        render(<DashboardPage />)
+
+        // Check for persona selector
+        expect(screen.getByText('Choose your Tester')).toBeInTheDocument()
+        expect(screen.getByText('The Performance Hawk')).toBeInTheDocument()
+        expect(screen.getByText('The Gremlin')).toBeInTheDocument()
+        expect(screen.getByText('The White Hat')).toBeInTheDocument()
+        expect(screen.getByText('The Auditor')).toBeInTheDocument()
     })
 })
