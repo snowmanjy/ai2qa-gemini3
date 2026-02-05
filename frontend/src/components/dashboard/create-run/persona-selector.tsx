@@ -5,15 +5,16 @@ import { cn } from "@/lib/utils";
 import { capture } from "@/lib/analytics";
 
 // Define the personas to match the backend Enum
+// Order: Hawk (default, most impressive) → Gremlin → White Hat → Auditor (last, least exciting)
 const PERSONAS = [
     {
-        id: "STANDARD",
-        name: "The Auditor",
-        role: "Standard QA",
-        description: "Obsessed with specs. Verifies business logic and data integrity with surgical precision.",
-        avatar: "/images/persona-auditor.png",
-        color: "ring-blue-500",
-        badge: "bg-[var(--status-info-bg)] text-[var(--status-info-text)]",
+        id: "PERFORMANCE_HAWK",
+        name: "The Performance Hawk",
+        role: "Performance Auditor",
+        description: "Watches every millisecond. Tracks Core Web Vitals, page load times, and optimization opportunities.",
+        avatar: "/images/persona-performance.png",
+        color: "ring-orange-500",
+        badge: "bg-orange-500/20 text-orange-400",
     },
     {
         id: "CHAOS",
@@ -35,13 +36,13 @@ const PERSONAS = [
         warning: "Injects test payloads into forms. Use on staging/dev only.",
     },
     {
-        id: "PERFORMANCE_HAWK",
-        name: "The Performance Hawk",
-        role: "Performance Auditor",
-        description: "Watches every millisecond. Tracks Core Web Vitals, page load times, and optimization opportunities.",
-        avatar: "/images/persona-performance.png",
-        color: "ring-orange-500",
-        badge: "bg-orange-500/20 text-orange-400",
+        id: "STANDARD",
+        name: "The Auditor",
+        role: "Standard QA",
+        description: "Obsessed with specs. Verifies business logic and data integrity with surgical precision.",
+        avatar: "/images/persona-auditor.png",
+        color: "ring-blue-500",
+        badge: "bg-[var(--status-info-bg)] text-[var(--status-info-text)]",
     },
 ];
 

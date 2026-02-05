@@ -34,7 +34,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-pt-40 scroll-smooth" suppressHydrationWarning>
+    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} antialiased h-full`}
         suppressHydrationWarning
@@ -53,7 +53,7 @@ export default function RootLayout({
             >
               Skip to main content
             </a>
-            <main id="main-content" className="pt-40 min-h-screen bg-background">
+            <main id="main-content" className="min-h-screen bg-background">
               {children}
             </main>
             {/* Theme toggle in bottom-right corner */}

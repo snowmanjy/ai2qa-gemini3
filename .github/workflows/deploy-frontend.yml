@@ -40,8 +40,8 @@ jobs:
         working-directory: frontend
         run: |
           docker build \
-            --build-arg NEXT_PUBLIC_API_URL=https://ai2qa-api-ai2qa-hackathon-demo.a.run.app \
-            --build-arg NEXT_PUBLIC_APP_URL=${{ vars.APP_URL || 'https://ai2qa.com' }} \
+            --build-arg NEXT_PUBLIC_API_URL=https://ai2qa-api-594181886138.us-central1.run.app \
+            --build-arg NEXT_PUBLIC_APP_URL=https://ai2qa-frontend-594181886138.us-central1.run.app \
             --build-arg NEXT_PUBLIC_RECAPTCHA_SITE_KEY=6LcrDGEsAAAAAK_qxNiXTZSazlwvrcpM4pJt92Gy \
             -t ${{ env.DOCKER_REPO }}/frontend:${{ github.sha }} \
             -t ${{ env.DOCKER_REPO }}/frontend:latest \
