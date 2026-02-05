@@ -55,8 +55,8 @@ export function PersonaSelector({ selected, onChange }: PersonaSelectorProps) {
     return (
         <div className="w-full space-y-3">
             <div className="flex items-center justify-between">
-                <h3 className="text-sm font-medium text-slate-200">Choose your Tester</h3>
-                <span className="text-xs text-slate-500">Who is running this test?</span>
+                <h3 className="text-sm font-medium text-foreground">Choose your Tester</h3>
+                <span className="text-xs text-muted-foreground">Who is running this test?</span>
             </div>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -78,10 +78,10 @@ export function PersonaSelector({ selected, onChange }: PersonaSelectorProps) {
                                 onChange(persona.id);
                             }}
                             className={cn(
-                                "relative flex cursor-pointer flex-col rounded-xl border-2 bg-slate-900/50 p-4 text-left transition-all hover:border-slate-600 hover:bg-slate-800/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900",
+                                "relative flex cursor-pointer flex-col rounded-xl border-2 bg-card p-4 text-left transition-all hover:border-muted-foreground/50 hover:bg-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                                 isSelected
                                     ? "border-blue-500"
-                                    : "border-slate-700/50"
+                                    : "border-border"
                             )}
                         >
                             {/* Avatar Area */}
@@ -103,11 +103,11 @@ export function PersonaSelector({ selected, onChange }: PersonaSelectorProps) {
                                     {isSelected && <CheckCircle2 className="h-4 w-4 text-emerald-400" aria-hidden="true" />}
                                 </div>
 
-                                <span className="mt-2 block text-sm font-bold text-slate-100">
+                                <span className="mt-2 block text-sm font-bold text-foreground">
                                     {persona.name}
                                 </span>
 
-                                <span className="mt-1 block text-xs leading-relaxed text-slate-400">
+                                <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">
                                     {persona.description}
                                 </span>
 
