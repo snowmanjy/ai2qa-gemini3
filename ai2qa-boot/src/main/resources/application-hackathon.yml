@@ -42,7 +42,7 @@ spring:
           location: ${VERTEX_AI_LOCATION:us-central1}
           chat:
             options:
-              model: ${VERTEX_AI_MODEL:gemini-2.0-flash}
+              model: ${VERTEX_AI_MODEL:gemini-3-flash-preview}
               temperature: ${AI_TEMPERATURE:0.2}
 
 # Server
@@ -91,7 +91,7 @@ ai2qa:
   ai:
     provider: vertex-ai
     temperature: ${AI_TEMPERATURE:0.2}
-    model: ${VERTEX_AI_MODEL:gemini-2.0-flash}
+    model: ${VERTEX_AI_MODEL:gemini-3-flash-preview}
 
   # Browser automation ENABLED for hackathon
   browser:

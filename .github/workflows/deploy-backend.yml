@@ -57,11 +57,17 @@ jobs:
       - name: Get Cloud SQL Instance
         id: sql
         run: |
-          INSTANCE=$(gcloud sql instances describe ai2qa-demo-db --format="value(connectionName)" 2>/dev/null || echo "")
+          INSTANCE=$(gcloud sql instances describe ai2qa-demo-db --format="value(connectionName)")
+          echo "Cloud SQL Instance: $INSTANCE"
           echo "instance=$INSTANCE" >> $GITHUB_OUTPUT
+          if [ -z "$INSTANCE" ]; then
+            echo "ERROR: Cloud SQL instance not found!"
+            exit 1
+          fi
 
       - name: Deploy to Cloud Run
         run: |
+          echo "Deploying with Cloud SQL instance: ${{ steps.sql.outputs.instance }}"
           gcloud run deploy ai2qa-api \
             --image=${{ env.DOCKER_REPO }}/backend:${{ github.sha }} \
             --region=${{ env.REGION }} \
@@ -69,20 +75,28 @@ jobs:
             --cpu=2 \
             --min-instances=0 \
             --max-instances=10 \
-            --concurrency=80 \
+            --concurrency=40 \
             --timeout=300s \
             --cpu-boost \
+            --execution-environment=gen2 \
             --service-account=ai2qa-app@ai2qa-hackathon-demo.iam.gserviceaccount.com \
-            --set-env-vars="^@^SPRING_PROFILES_ACTIVE=prod@GOOGLE_CLOUD_PROJECT=${{ env.PROJECT_ID }}@DAILY_CAP=50@RECAPTCHA_ENABLED=false@CLOUD_SQL_INSTANCE=${{ steps.sql.outputs.instance }}" \
+            --set-env-vars="^##^SPRING_PROFILES_ACTIVE=prod##GOOGLE_CLOUD_PROJECT=${{ env.PROJECT_ID }}##DAILY_CAP=50##RECAPTCHA_ENABLED=false##CLOUD_SQL_INSTANCE=${{ steps.sql.outputs.instance }}" \
             --set-secrets="CLOUD_SQL_PASSWORD=db-password:latest,CACHE_ENCRYPTION_KEY=cache-encryption-key:latest" \
             --add-cloudsql-instances=${{ steps.sql.outputs.instance }} \
             --vpc-connector=ai2qa-demo-connector \
             --vpc-egress=private-ranges-only \
-            --allow-unauthenticated \
-            --quiet
+            --allow-unauthenticated
 
       - name: Get Service URL
         run: |
           URL=$(gcloud run services describe ai2qa-api --region=${{ env.REGION }} --format="value(status.url)")
           echo "## Deployment Complete" >> $GITHUB_STEP_SUMMARY
           echo "API URL: $URL" >> $GITHUB_STEP_SUMMARY
+
+      - name: Show Recent Logs on Failure
+        if: failure()
+        run: |
+          echo "## Recent Cloud Run Logs" >> $GITHUB_STEP_SUMMARY
+          gcloud logging read "resource.type=cloud_run_revision AND resource.labels.service_name=ai2qa-api" \
+            --limit=50 --format="table(timestamp,severity,textPayload)" \
+            --project=${{ env.PROJECT_ID }} || true
