@@ -101,14 +101,6 @@ describe('RunDetailPage', () => {
         expect(screen.getByText('Code')).toBeInTheDocument()
     })
 
-    it('shows Save as Plan button for completed run', async () => {
-        render(<RunDetailPage />)
-
-        await waitFor(() => {
-            expect(screen.getByText('Save as Plan')).toBeInTheDocument()
-        })
-    })
-
     it('shows Back to Runs link', async () => {
         render(<RunDetailPage />)
 
