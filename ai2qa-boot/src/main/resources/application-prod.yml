@@ -18,10 +18,10 @@ spring:
       idle-timeout: 600000
       max-lifetime: 1800000
 
-  # JPA Production Settings
+  # JPA Production Settings - Hackathon: create tables automatically
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -29,11 +29,9 @@ spring:
     show-sql: false
     open-in-view: false
 
-  # Flyway - Validate migrations only in prod
+  # Flyway disabled for hackathon (using ddl-auto: update)
   flyway:
-    enabled: true
-    locations: classpath:db/migration
-    validate-on-migrate: true
+    enabled: false
 
   # Redis removed for hackathon - using in-memory queues
 
@@ -46,7 +44,7 @@ spring:
           location: ${VERTEX_AI_LOCATION:us-central1}
           chat:
             options:
-              model: ${VERTEX_AI_MODEL:gemini-2.5-flash}
+              model: ${VERTEX_AI_MODEL:gemini-3-flash-preview}
               temperature: ${AI_TEMPERATURE:0.2}
 
 # Resilience4j Circuit Breaker Configuration (Production)
@@ -81,7 +79,7 @@ server:
 # CORS Configuration for Production
 app:
   cors:
-    allowed-origins: https://ai2qa.com,https://www.ai2qa.com,https://ai2qa-frontend-ai2qa-484417.a.run.app
+    allowed-origins: https://ai2qa.com,https://www.ai2qa.com,https://ai2qa-frontend-ai2qa-hackathon-demo.a.run.app
 
 # Actuator - Secure endpoints
 management:
@@ -131,7 +129,7 @@ spring.mail:
 # Google Cloud Storage (Artifacts)
 gcp:
   storage:
-    bucket-name: ${GCP_STORAGE_BUCKET:ai2qa-484417-artifacts}
+    bucket-name: ${GCP_STORAGE_BUCKET:ai2qa-hackathon-demo-artifacts}
 
 # Ai2QA Production Settings
 ai2qa:
@@ -141,7 +139,7 @@ ai2qa:
   ai:
     provider: vertex-ai
     temperature: ${AI_TEMPERATURE:0.2}
-    model: ${VERTEX_AI_MODEL:gemini-2.5-flash}
+    model: ${VERTEX_AI_MODEL:gemini-3-flash-preview}
 
   mcp:
     node-path: node

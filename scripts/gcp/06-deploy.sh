@@ -7,14 +7,14 @@
 
 set -e
 
-export PROJECT_ID="${PROJECT_ID:-ai2qa-484417}"
+export PROJECT_ID="${PROJECT_ID:-ai2qa-hackathon-demo}"
 export REGION="${REGION:-us-central1}"
 
 echo "=== Phase 4: Deploy Backend Services (Hackathon Edition) ==="
 
 # Get infrastructure details
 export SA_EMAIL="ai2qa-app@${PROJECT_ID}.iam.gserviceaccount.com"
-export CLOUD_SQL_INSTANCE=$(gcloud sql instances describe ai2qa-db --format="value(connectionName)")
+export CLOUD_SQL_INSTANCE=$(gcloud sql instances describe ai2qa-demo-db --format="value(connectionName)")
 export DOCKER_REPO="${REGION}-docker.pkg.dev/${PROJECT_ID}/ai2qa"
 
 echo ""
@@ -55,7 +55,7 @@ ENV_VARS="${ENV_VARS}@SAFE_BROWSING_ENABLED=${SAFE_BROWSING_ENABLED:-false}"
 ENV_VARS="${ENV_VARS}@AI2QA_BROWSER_ENGINE=playwright"
 ENV_VARS="${ENV_VARS}@AI2QA_BROWSER_SNAPSHOT_MODE=aria"
 ENV_VARS="${ENV_VARS}@DAILY_CAP=${DAILY_CAP:-50}"
-ENV_VARS="${ENV_VARS}@RECAPTCHA_ENABLED=${RECAPTCHA_ENABLED:-false}"
+ENV_VARS="${ENV_VARS}@RECAPTCHA_ENABLED=true"
 
 # Build secrets string (only required secrets)
 SECRETS="CLOUD_SQL_PASSWORD=db-password:latest"
@@ -85,7 +85,7 @@ gcloud run deploy ai2qa-api \
   --set-env-vars="^@^${ENV_VARS}" \
   --set-secrets="${SECRETS}" \
   --add-cloudsql-instances="${CLOUD_SQL_INSTANCE}" \
-  --vpc-connector=ai2qa-connector \
+  --vpc-connector=ai2qa-demo-connector \
   --vpc-egress=private-ranges-only \
   --allow-unauthenticated \
   --quiet
@@ -119,7 +119,7 @@ gcloud run jobs create ai2qa-worker \
   --service-account="$SA_EMAIL" \
   --set-env-vars="^@^${WORKER_ENV_VARS}" \
   --set-secrets="${WORKER_SECRETS}" \
-  --vpc-connector=ai2qa-connector \
+  --vpc-connector=ai2qa-demo-connector \
   --vpc-egress=private-ranges-only \
   --quiet 2>/dev/null || \
 gcloud run jobs update ai2qa-worker \
@@ -132,7 +132,7 @@ gcloud run jobs update ai2qa-worker \
   --service-account="$SA_EMAIL" \
   --set-env-vars="^@^${WORKER_ENV_VARS}" \
   --set-secrets="${WORKER_SECRETS}" \
-  --vpc-connector=ai2qa-connector \
+  --vpc-connector=ai2qa-demo-connector \
   --vpc-egress=private-ranges-only \
   --quiet
 

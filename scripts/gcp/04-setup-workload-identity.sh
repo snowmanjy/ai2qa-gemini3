@@ -6,10 +6,10 @@
 
 set -e
 
-export PROJECT_ID="${PROJECT_ID:-ai2qa-484417}"
+export PROJECT_ID="${PROJECT_ID:-ai2qa-hackathon-demo}"
 export REGION="${REGION:-us-central1}"
-export GITHUB_ORG="${GITHUB_ORG:-SameThoughts}"
-export GITHUB_REPO="${GITHUB_REPO:-AI2QA}"
+export GITHUB_ORG="${GITHUB_ORG:-snowmanjy}"
+export GITHUB_REPO="${GITHUB_REPO:-ai2qa-gemini3}"
 
 echo "=== Phase 3: Workload Identity Federation ==="
 echo "GitHub Repo: $GITHUB_ORG/$GITHUB_REPO"

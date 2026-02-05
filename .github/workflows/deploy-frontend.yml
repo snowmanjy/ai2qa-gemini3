@@ -1,0 +1,72 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/deploy-frontend.yml'
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: ai2qa-hackathon-demo
+  REGION: us-central1
+  DOCKER_REPO: us-central1-docker.pkg.dev/ai2qa-hackathon-demo/ai2qa
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and Push Docker Image
+        working-directory: frontend
+        run: |
+          docker build \
+            --build-arg NEXT_PUBLIC_API_URL=https://ai2qa-api-ai2qa-hackathon-demo.a.run.app \
+            --build-arg NEXT_PUBLIC_APP_URL=${{ vars.APP_URL || 'https://ai2qa.com' }} \
+            --build-arg NEXT_PUBLIC_RECAPTCHA_SITE_KEY=6LcrDGEsAAAAAK_qxNiXTZSazlwvrcpM4pJt92Gy \
+            -t ${{ env.DOCKER_REPO }}/frontend:${{ github.sha }} \
+            -t ${{ env.DOCKER_REPO }}/frontend:latest \
+            .
+          docker push ${{ env.DOCKER_REPO }}/frontend:${{ github.sha }}
+          docker push ${{ env.DOCKER_REPO }}/frontend:latest
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy ai2qa-frontend \
+            --image=${{ env.DOCKER_REPO }}/frontend:${{ github.sha }} \
+            --region=${{ env.REGION }} \
+            --memory=512Mi \
+            --cpu=1 \
+            --min-instances=0 \
+            --max-instances=5 \
+            --concurrency=80 \
+            --timeout=60s \
+            --service-account=ai2qa-app@ai2qa-hackathon-demo.iam.gserviceaccount.com \
+            --set-env-vars="NODE_ENV=production" \
+            --allow-unauthenticated \
+            --quiet
+
+      - name: Get Service URL
+        run: |
+          URL=$(gcloud run services describe ai2qa-frontend --region=${{ env.REGION }} --format="value(status.url)")
+          echo "## Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "Frontend URL: $URL" >> $GITHUB_STEP_SUMMARY

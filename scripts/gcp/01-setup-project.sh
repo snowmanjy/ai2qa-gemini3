@@ -10,8 +10,8 @@
 
 set -e
 
-# Configuration
-export PROJECT_ID="${PROJECT_ID:-ai2qa-484417}"
+# Configuration - Hackathon Demo Environment
+export PROJECT_ID="${PROJECT_ID:-ai2qa-hackathon-demo}"
 export REGION="${REGION:-us-central1}"
 
 echo "=== Phase 1: GCP Project Foundation ==="
