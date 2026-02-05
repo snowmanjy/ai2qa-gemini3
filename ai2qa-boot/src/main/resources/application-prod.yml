@@ -79,7 +79,7 @@ server:
 # CORS Configuration for Production
 app:
   cors:
-    allowed-origins: https://ai2qa.com,https://www.ai2qa.com,https://ai2qa-frontend-ai2qa-hackathon-demo.a.run.app
+    allowed-origins: https://ai2qa.com,https://www.ai2qa.com,https://demo.ai2qa.com,https://ai2qa-frontend-594181886138.us-central1.run.app
 
 # Actuator - Secure endpoints
 management:

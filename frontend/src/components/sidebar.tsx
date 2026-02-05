@@ -100,17 +100,6 @@ export function Sidebar() {
                 </div>
             </div>
 
-            {/* Hackathon Footer */}
-            <div className="px-3 py-4 border-t border-border">
-                <div className="text-center">
-                    <p className="text-xs text-muted-foreground">
-                        Built for the
-                    </p>
-                    <p className="text-xs font-medium text-blue-400">
-                        Google DeepMind Gemini 3 Hackathon
-                    </p>
-                </div>
-            </div>
         </div>
     );
 }
