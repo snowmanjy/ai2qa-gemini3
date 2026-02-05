@@ -80,8 +80,8 @@ jobs:
             --cpu-boost \
             --execution-environment=gen2 \
             --service-account=ai2qa-app@ai2qa-hackathon-demo.iam.gserviceaccount.com \
-            --set-env-vars="^##^SPRING_PROFILES_ACTIVE=prod##GOOGLE_CLOUD_PROJECT=${{ env.PROJECT_ID }}##DAILY_CAP=50##RECAPTCHA_ENABLED=false##CLOUD_SQL_INSTANCE=${{ steps.sql.outputs.instance }}" \
-            --set-secrets="CLOUD_SQL_PASSWORD=db-password:latest,CACHE_ENCRYPTION_KEY=cache-encryption-key:latest" \
+            --set-env-vars="^##^SPRING_PROFILES_ACTIVE=prod##GOOGLE_CLOUD_PROJECT=${{ env.PROJECT_ID }}##DAILY_CAP=50##RECAPTCHA_ENABLED=true##CLOUD_SQL_INSTANCE=${{ steps.sql.outputs.instance }}" \
+            --set-secrets="CLOUD_SQL_PASSWORD=db-password:latest,CACHE_ENCRYPTION_KEY=cache-encryption-key:latest,RECAPTCHA_SECRET_KEY=recaptcha-secret-key:latest" \
             --add-cloudsql-instances=${{ steps.sql.outputs.instance }} \
             --vpc-connector=ai2qa-demo-connector \
             --vpc-egress=private-ranges-only \
