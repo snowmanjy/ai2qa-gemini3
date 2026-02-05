@@ -4,22 +4,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, MessageSquare, Home, FileText, ExternalLink } from "lucide-react";
+import { LayoutDashboard, FileText, Sparkles } from "lucide-react";
 import Image from "next/image";
 
 const RUN_PATH_RE = /^\/dashboard\/runs\/([^/]+)/;
 
 const routes = [
     {
-        label: "Runs",
+        label: "Test Runs",
         icon: LayoutDashboard,
         href: "/dashboard",
         color: "text-sky-500",
     },
 ];
-
-// External links (open in new tab, domain separation)
-const COMMUNITY_FORUM_URL = "https://www.producthunt.com/p/ai2qa";
 
 export function Sidebar() {
     const pathname = usePathname();
@@ -44,16 +41,25 @@ export function Sidebar() {
     return (
         <div className="space-y-4 py-4 flex flex-col h-full sidebar-cosmic text-card-foreground">
             <div className="px-3 py-2 flex-1">
-                <Link href="/" className="flex items-center justify-center mb-14" title="Back to Home">
+                <div className="flex items-center justify-center mb-8">
                     <Image
                         src="/logo.png"
                         alt="Ai2QA"
-                        width={240}
-                        height={96}
-                        className="object-contain h-24 w-auto dark:brightness-150"
+                        width={200}
+                        height={80}
+                        className="object-contain h-20 w-auto dark:brightness-150"
                         priority
                     />
-                </Link>
+                </div>
+
+                {/* Powered by Gemini 3 Badge */}
+                <div className="flex items-center justify-center mb-8">
+                    <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30">
+                        <Sparkles className="h-4 w-4 text-blue-400" />
+                        <span className="text-xs font-medium text-blue-300">Powered by Gemini 3</span>
+                    </div>
+                </div>
+
                 <div className="space-y-1">
                     {routes.map((route) => (
                         <Link
@@ -92,36 +98,18 @@ export function Sidebar() {
                         </Link>
                     )}
                 </div>
-
-                {/* External Links Section */}
-                <div className="mt-8 pt-6 border-t border-border">
-                    <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                        Community
-                    </p>
-                    <a
-                        href={COMMUNITY_FORUM_URL}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-base group flex p-3 w-full justify-start font-medium cursor-pointer hover:bg-accent rounded-lg transition text-muted-foreground"
-                    >
-                        <div className="flex items-center flex-1">
-                            <MessageSquare className="h-5 w-5 mr-3 text-purple-500" aria-hidden="true" />
-                            Community Forum
-                            <ExternalLink className="h-3.5 w-3.5 ml-2 text-muted-foreground/50" aria-hidden="true" />
-                        </div>
-                    </a>
-                </div>
             </div>
-            <div className="px-3 py-2 border-t border-border">
-                <Link
-                    href="/"
-                    className="text-base group flex p-3 w-full justify-start font-medium cursor-pointer hover:bg-accent rounded-lg transition text-muted-foreground"
-                >
-                    <div className="flex items-center flex-1">
-                        <Home className="h-5 w-5 mr-3 text-blue-400" aria-hidden="true" />
-                        Back to Home
-                    </div>
-                </Link>
+
+            {/* Hackathon Footer */}
+            <div className="px-3 py-4 border-t border-border">
+                <div className="text-center">
+                    <p className="text-xs text-muted-foreground">
+                        Built for the
+                    </p>
+                    <p className="text-xs font-medium text-blue-400">
+                        Google DeepMind Gemini 3 Hackathon
+                    </p>
+                </div>
             </div>
         </div>
     );

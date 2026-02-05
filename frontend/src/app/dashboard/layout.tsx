@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import { Sidebar } from "@/components/sidebar";
-import { Menu } from "lucide-react";
+import { Menu, Sparkles } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 
 export default function DashboardLayout({
     children,
@@ -39,23 +38,28 @@ export default function DashboardLayout({
             </div>
 
             {/* Mobile top bar */}
-            <div className="md:hidden fixed top-0 left-0 right-0 z-[60] flex items-center h-14 px-4 border-b border-border bg-card">
-                <button
-                    onClick={() => setSidebarOpen(true)}
-                    className="p-2 rounded-lg hover:bg-accent transition"
-                    aria-label="Open sidebar"
-                >
-                    <Menu className="h-5 w-5 text-foreground" />
-                </button>
-                <Link href="/" className="ml-3">
+            <div className="md:hidden fixed top-0 left-0 right-0 z-[60] flex items-center justify-between h-14 px-4 border-b border-border bg-card">
+                <div className="flex items-center">
+                    <button
+                        onClick={() => setSidebarOpen(true)}
+                        className="p-2 rounded-lg hover:bg-accent transition"
+                        aria-label="Open sidebar"
+                    >
+                        <Menu className="h-5 w-5 text-foreground" />
+                    </button>
                     <Image
                         src="/logo.png"
                         alt="Ai2QA"
                         width={100}
                         height={40}
-                        className="object-contain h-8 w-auto dark:brightness-150"
+                        className="ml-3 object-contain h-8 w-auto dark:brightness-150"
                     />
-                </Link>
+                </div>
+                {/* Gemini badge for mobile */}
+                <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-blue-500/20 border border-blue-500/30">
+                    <Sparkles className="h-3 w-3 text-blue-400" />
+                    <span className="text-[10px] font-medium text-blue-300">Gemini 3</span>
+                </div>
             </div>
 
             <main className="md:pl-72 h-full dashboard-bg text-foreground pt-14 md:pt-0">
