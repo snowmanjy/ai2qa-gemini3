@@ -1,0 +1,181 @@
+# =============================================================================
+# Hackathon Profile - Google DeepMind Gemini 3 Hackathon (Feb 2026)
+# =============================================================================
+# Zero-setup deployment: H2 in-memory DB, browser automation enabled
+# Use with: SPRING_PROFILES_ACTIVE=hackathon
+# =============================================================================
+
+spring:
+  # H2 In-Memory Database (no Cloud SQL setup needed)
+  datasource:
+    url: jdbc:h2:mem:ai2qa;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  # JPA - Auto-create schema
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: false
+    show-sql: false
+    open-in-view: false
+
+  # Flyway disabled (using ddl-auto: create)
+  flyway:
+    enabled: false
+
+  # H2 Console disabled in production
+  h2:
+    console:
+      enabled: false
+
+  # Spring AI - Vertex AI (uses ADC in Cloud Run)
+  ai:
+    vertex:
+      ai:
+        gemini:
+          project-id: ${GOOGLE_CLOUD_PROJECT}
+          location: ${VERTEX_AI_LOCATION:us-central1}
+          chat:
+            options:
+              model: ${VERTEX_AI_MODEL:gemini-2.0-flash}
+              temperature: ${AI_TEMPERATURE:0.2}
+
+# Server
+server:
+  port: 8080
+  shutdown: graceful
+
+# CORS Configuration for Hackathon
+app:
+  cors:
+    allowed-origins: "*"
+
+# Actuator - Health probes for Cloud Run
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
+  health:
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
+    mail:
+      enabled: false
+
+# Logging - JSON format for Cloud Logging
+logging:
+  level:
+    com.ai2qa: INFO
+    org.springframework: WARN
+  pattern:
+    console: '{"timestamp":"%d{ISO8601}","level":"%level","logger":"%logger","message":"%msg"}%n'
+
+# Ai2QA Hackathon Settings
+ai2qa:
+  # Daily global cap on test runs (prevent abuse)
+  daily-cap: ${DAILY_CAP:50}
+
+  # AI Provider - Vertex AI / Gemini only
+  ai:
+    provider: vertex-ai
+    temperature: ${AI_TEMPERATURE:0.2}
+    model: ${VERTEX_AI_MODEL:gemini-2.0-flash}
+
+  # Browser automation ENABLED for hackathon
+  browser:
+    enabled: true
+    engine: ${BROWSER_ENGINE:puppeteer}
+    snapshot-mode: ${SNAPSHOT_MODE:auto}
+    aria-enabled: ${ARIA_SNAPSHOT_ENABLED:true}
+    fallback-enabled: ${BROWSER_FALLBACK:true}
+
+  # MCP bridge ENABLED
+  mcp:
+    enabled: true
+    node-path: node
+    server-script: /app/mcp-server/server.js
+    startup-timeout-ms: 60000
+    timeout-ms: 60000
+    context-creation-timeout-ms: 120000
+    chrome-args:
+      - "--no-sandbox"
+      - "--disable-gpu"
+      - "--disable-dev-shm-usage"
+      - "--headless=new"
+
+  cache:
+    encryption-key: ${CACHE_ENCRYPTION_KEY:aGFja2F0aG9uLWRlbW8ta2V5LTMyLWJ5dGVzISEhIQ==}
+
+  # Email notifications disabled for hackathon
+  email:
+    enabled: false
+
+  # Admin alerts disabled
+  admin:
+    alerts-enabled: false
+
+  # Security settings
+  security:
+    target:
+      blacklist: ${AI2QA_SECURITY_TARGET_BLACKLIST:localhost,127.0.0.1,.gov,.mil}
+
+  # Rate limiting
+  rate-limit:
+    enabled: true
+    user-per-minute: ${RATE_LIMIT_USER_PER_MINUTE:10}
+    ip-per-hour: ${RATE_LIMIT_IP_PER_HOUR:30}
+
+  # Concurrent limits
+  concurrent-limit:
+    enabled: true
+    max-per-user: ${CONCURRENT_LIMIT_MAX_PER_USER:2}
+    max-global: ${CONCURRENT_LIMIT_MAX_GLOBAL:30}
+
+  # Data retention
+  retention:
+    days: ${ARTIFACT_RETENTION_DAYS:7}
+
+# Resilience4j Circuit Breaker
+resilience4j:
+  circuitbreaker:
+    instances:
+      aiService:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 60s
+        permittedNumberOfCallsInHalfOpenState: 3
+        minimumNumberOfCalls: 5
+        recordExceptions:
+          - java.util.concurrent.TimeoutException
+          - java.net.SocketTimeoutException
+          - java.io.IOException
+        ignoreExceptions:
+          - java.lang.IllegalArgumentException
+  timelimiter:
+    instances:
+      aiService:
+        timeoutDuration: 300s
+        cancelRunningFuture: true
+
+# reCAPTCHA Configuration
+recaptcha:
+  enabled: ${RECAPTCHA_ENABLED:false}
+  secret-key: ${RECAPTCHA_SECRET_KEY:}
+
+# GCP Storage - Local filesystem fallback for hackathon
+gcp:
+  storage:
+    bucket-name: ${GCP_STORAGE_BUCKET:}
