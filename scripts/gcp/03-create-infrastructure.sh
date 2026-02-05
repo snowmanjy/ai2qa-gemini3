@@ -6,7 +6,7 @@
 
 set -e
 
-export PROJECT_ID="${PROJECT_ID:-ai2qa-484417}"
+export PROJECT_ID="${PROJECT_ID:-ai2qa-hackathon-demo}"
 export REGION="${REGION:-us-central1}"
 
 echo "=== Phase 2: Core Infrastructure ==="
@@ -16,13 +16,13 @@ echo "=== Phase 2: Core Infrastructure ==="
 # -----------------------------------------------------------------------------
 echo ""
 echo ">>> Creating VPC Network..."
-gcloud compute networks create ai2qa-vpc \
+gcloud compute networks create ai2qa-demo-vpc \
   --subnet-mode=custom \
   --quiet 2>/dev/null || echo "VPC may already exist, continuing..."
 
 echo ">>> Creating Subnet..."
-gcloud compute networks subnets create ai2qa-subnet \
-  --network=ai2qa-vpc \
+gcloud compute networks subnets create ai2qa-demo-subnet \
+  --network=ai2qa-demo-vpc \
   --region=$REGION \
   --range=10.0.0.0/24 \
   --enable-private-ip-google-access \
@@ -33,9 +33,9 @@ gcloud compute networks subnets create ai2qa-subnet \
 # -----------------------------------------------------------------------------
 echo ""
 echo ">>> Creating Serverless VPC Connector..."
-gcloud compute networks vpc-access connectors create ai2qa-connector \
+gcloud compute networks vpc-access connectors create ai2qa-demo-connector \
   --region=$REGION \
-  --network=ai2qa-vpc \
+  --network=ai2qa-demo-vpc \
   --range=10.8.0.0/28 \
   --min-instances=2 \
   --max-instances=3 \
@@ -55,7 +55,7 @@ DB_PASSWORD=$(openssl rand -base64 24 | tr -d '=+/' | head -c 24)
 if gcloud sql instances describe ai2qa-db --quiet 2>/dev/null; then
   echo "Cloud SQL instance already exists, skipping creation..."
 else
-  gcloud sql instances create ai2qa-db \
+  gcloud sql instances create ai2qa-demo-db \
     --database-version=POSTGRES_15 \
     --tier=db-f1-micro \
     --region=$REGION \
@@ -67,8 +67,8 @@ else
 
   # Create database and user
   echo ">>> Creating database and user..."
-  gcloud sql databases create ai2qa --instance=ai2qa-db --quiet 2>/dev/null || true
-  gcloud sql users create ai2qa --instance=ai2qa-db --password="$DB_PASSWORD" --quiet 2>/dev/null || true
+  gcloud sql databases create ai2qa --instance=ai2qa-demo-db --quiet 2>/dev/null || true
+  gcloud sql users create ai2qa --instance=ai2qa-demo-db --password="$DB_PASSWORD" --quiet 2>/dev/null || true
 
   # Store password in Secret Manager
   echo ">>> Storing database password in Secret Manager..."
@@ -81,7 +81,7 @@ else
 fi
 
 # Get Cloud SQL connection name
-CLOUD_SQL_INSTANCE=$(gcloud sql instances describe ai2qa-db --format="value(connectionName)")
+CLOUD_SQL_INSTANCE=$(gcloud sql instances describe ai2qa-demo-db --format="value(connectionName)")
 echo "Cloud SQL Instance: $CLOUD_SQL_INSTANCE"
 
 # -----------------------------------------------------------------------------

@@ -54,7 +54,7 @@ spring:
           location: us-central1
           chat:
             options:
-              model: ${AI_MODEL:gemini-2.5-flash}
+              model: ${AI_MODEL:gemini-3-flash-preview}
               temperature: ${AI_TEMPERATURE:0.2}
 
 # reCAPTCHA Configuration (Hackathon - abuse prevention)
@@ -69,7 +69,7 @@ ai2qa:
   ai:
     # Hackathon: Always use Vertex AI / Gemini
     provider: vertex-ai
-    model: ${AI_MODEL:gemini-2.5-flash}
+    model: ${AI_MODEL:gemini-3-flash-preview}
     temperature: ${AI_TEMPERATURE:0.2}
   # MCP Bridge settings
   mcp:

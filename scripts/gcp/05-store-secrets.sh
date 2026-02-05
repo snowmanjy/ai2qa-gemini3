@@ -7,7 +7,7 @@
 
 set -e
 
-export PROJECT_ID="${PROJECT_ID:-ai2qa-484417}"
+export PROJECT_ID="${PROJECT_ID:-ai2qa-hackathon-demo}"
 
 echo "=== Phase 6: Store Production Secrets (Hackathon Edition) ==="
 echo ""

@@ -7,7 +7,7 @@
 
 set -e
 
-export PROJECT_ID="${PROJECT_ID:-ai2qa-484417}"
+export PROJECT_ID="${PROJECT_ID:-ai2qa-hackathon-demo}"
 export REGION="${REGION:-us-central1}"
 export DOCKER_REPO="${REGION}-docker.pkg.dev/${PROJECT_ID}/ai2qa"
 
@@ -23,7 +23,7 @@ echo ">>> Building frontend Docker image..."
 docker build \
   --build-arg NEXT_PUBLIC_API_URL="https://ai2qa-api-${PROJECT_ID}.a.run.app" \
   --build-arg NEXT_PUBLIC_APP_URL="${NEXT_PUBLIC_APP_URL:-https://ai2qa.com}" \
-  --build-arg NEXT_PUBLIC_RECAPTCHA_SITE_KEY="${NEXT_PUBLIC_RECAPTCHA_SITE_KEY:-}" \
+  --build-arg NEXT_PUBLIC_RECAPTCHA_SITE_KEY="6LcrDGEsAAAAAK_qxNiXTZSazlwvrcpM4pJt92Gy" \
   -t ${DOCKER_REPO}/frontend:latest \
   .
 

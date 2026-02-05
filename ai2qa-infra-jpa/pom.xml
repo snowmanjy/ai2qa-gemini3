@@ -43,14 +43,26 @@
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
 
-        <!-- H2 In-Memory Database (Hackathon - zero setup for judges) -->
+        <!-- H2 In-Memory Database (local development) -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Flyway disabled for hackathon (using ddl-auto: create) -->
+        <!-- PostgreSQL (GCP Cloud SQL production) -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Cloud SQL Socket Factory (GCP production) -->
+        <dependency>
+            <groupId>com.google.cloud.sql</groupId>
+            <artifactId>postgres-socket-factory</artifactId>
+            <version>1.15.0</version>
+        </dependency>
 
         <!-- Encryption for sensitive data -->
         <dependency>
@@ -58,8 +70,6 @@
             <artifactId>jasypt-spring-boot-starter</artifactId>
             <version>3.0.5</version>
         </dependency>
-
-        <!-- Cloud SQL Socket Factory removed for hackathon (H2 in-memory) -->
 
         <!-- Google Cloud Storage for artifacts -->
         <dependency>

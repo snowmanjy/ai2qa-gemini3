@@ -1,0 +1,87 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'ai2qa-*/**'
+      - 'pom.xml'
+      - 'Dockerfile'
+      - '.github/workflows/deploy-backend.yml'
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: ai2qa-hackathon-demo
+  REGION: us-central1
+  DOCKER_REPO: us-central1-docker.pkg.dev/ai2qa-hackathon-demo/ai2qa
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build with Maven
+        run: mvn clean package -DskipTests -q
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t ${{ env.DOCKER_REPO }}/backend:${{ github.sha }} -t ${{ env.DOCKER_REPO }}/backend:latest .
+          docker push ${{ env.DOCKER_REPO }}/backend:${{ github.sha }}
+          docker push ${{ env.DOCKER_REPO }}/backend:latest
+
+      - name: Get Cloud SQL Instance
+        id: sql
+        run: |
+          INSTANCE=$(gcloud sql instances describe ai2qa-demo-db --format="value(connectionName)" 2>/dev/null || echo "")
+          echo "instance=$INSTANCE" >> $GITHUB_OUTPUT
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy ai2qa-api \
+            --image=${{ env.DOCKER_REPO }}/backend:${{ github.sha }} \
+            --region=${{ env.REGION }} \
+            --memory=1Gi \
+            --cpu=1 \
+            --min-instances=0 \
+            --max-instances=10 \
+            --concurrency=80 \
+            --timeout=60s \
+            --service-account=ai2qa-app@ai2qa-hackathon-demo.iam.gserviceaccount.com \
+            --set-env-vars="^@^SPRING_PROFILES_ACTIVE=api,prod@GOOGLE_CLOUD_PROJECT=${{ env.PROJECT_ID }}@DAILY_CAP=50@RECAPTCHA_ENABLED=false" \
+            --set-secrets="CLOUD_SQL_PASSWORD=db-password:latest,CACHE_ENCRYPTION_KEY=cache-encryption-key:latest" \
+            --add-cloudsql-instances=${{ steps.sql.outputs.instance }} \
+            --vpc-connector=ai2qa-demo-connector \
+            --vpc-egress=private-ranges-only \
+            --allow-unauthenticated \
+            --quiet
+
+      - name: Get Service URL
+        run: |
+          URL=$(gcloud run services describe ai2qa-api --region=${{ env.REGION }} --format="value(status.url)")
+          echo "## Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "API URL: $URL" >> $GITHUB_STEP_SUMMARY
