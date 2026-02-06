@@ -220,7 +220,7 @@ class ReflectorTest {
         }
 
         @Test
-        void shouldAbortAfterMaxRetries() {
+        void shouldSkipAfterMaxRetries() {
             // Given
             ActionStep action = ActionStepFactory.click("button");
             DomSnapshot before = DomSnapshot.of("content", "url", "title");
@@ -229,9 +229,9 @@ class ReflectorTest {
             // When - retry count at max (3)
             ReflectionResult result = reflector.reflect(action, before, null, error, 3);
 
-            // Then
-            assertThat(result.isAbort()).isTrue();
-            assertThat(result.getReason()).contains("failed after 4 attempts");
+            // Then - should skip and continue, not abort the entire run
+            assertThat(result.isSkip()).isTrue();
+            assertThat(result.getReason()).contains("skipped after 4 attempts");
         }
 
         @Test
@@ -298,7 +298,6 @@ class ReflectorTest {
 
             // Then - should skip, not abort
             assertThat(result.isSkip()).isTrue();
-            assertThat(result.getReason()).contains("Optional step");
             assertThat(result.getReason()).contains("skipped");
         }
 
@@ -373,8 +372,8 @@ class ReflectorTest {
         }
 
         @Test
-        void shouldAbortNonOptionalStepAfterMaxRetries() {
-            // Given - Regular action, not optional
+        void shouldSkipNonOptionalStepAfterMaxRetries() {
+            // Given - Even non-optional steps skip after max retries to avoid aborting the run
             ActionStep action = ActionStepFactory.click("Submit Form Button");
             DomSnapshot before = DomSnapshot.of("content", "url", "title");
             String error = "Element not found";
@@ -382,9 +381,9 @@ class ReflectorTest {
             // When
             ReflectionResult result = reflector.reflect(action, before, null, error, 3);
 
-            // Then - should abort, not skip
-            assertThat(result.isAbort()).isTrue();
-            assertThat(result.isSkip()).isFalse();
+            // Then - should skip (step recorded as SKIPPED in report)
+            assertThat(result.isSkip()).isTrue();
+            assertThat(result.getReason()).contains("skipped after 4 attempts");
         }
 
         @Test
@@ -475,8 +474,24 @@ class ReflectorTest {
         }
 
         @Test
-        void shouldNotSkipGenericCloseAction() {
-            // Given - "Close the account settings" has no transient UI keyword
+        void shouldSkipCloseProductDetailsButtonAfterMaxRetries() {
+            // Given - "close product details button" = a close button for a modal
+            // The AI names the target after the button, not the modal itself
+            ActionStep action = ActionStepFactory.click("close product details button");
+            DomSnapshot before = DomSnapshot.of("content", "url", "title");
+            String error = "Element not found";
+
+            // When
+            ReflectionResult result = reflector.reflect(action, before, null, error, 3);
+
+            // Then - should skip (dismiss verb + "button" = close button pattern)
+            assertThat(result.isSkip()).isTrue();
+            assertThat(result.getReason()).contains("Dismiss step");
+        }
+
+        @Test
+        void shouldSkipGenericCloseActionWithGenericMessage() {
+            // Given - "Close the account settings" is not a dismiss action
             ActionStep action = ActionStepFactory.click("Close the account settings");
             DomSnapshot before = DomSnapshot.of("content", "url", "title");
             String error = "Element not found";
@@ -484,9 +499,10 @@ class ReflectorTest {
             // When
             ReflectionResult result = reflector.reflect(action, before, null, error, 3);
 
-            // Then - should abort, NOT skip (not a transient UI element)
-            assertThat(result.isAbort()).isTrue();
-            assertThat(result.isSkip()).isFalse();
+            // Then - skips like all steps, but with generic message (not dismiss-specific)
+            assertThat(result.isSkip()).isTrue();
+            assertThat(result.getReason()).contains("skipped after 4 attempts");
+            assertThat(result.getReason()).doesNotContain("Dismiss step");
         }
 
         @Test
