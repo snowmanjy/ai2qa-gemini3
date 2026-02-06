@@ -430,6 +430,66 @@ class ReflectorTest {
         }
 
         @Test
+        void shouldSkipCloseWelcomeBannerAfterMaxRetries() {
+            // Given - "Close Welcome Banner" already handled by auto-dismiss
+            ActionStep action = ActionStepFactory.click("Close Welcome Banner");
+            DomSnapshot before = DomSnapshot.of("content", "url", "title");
+            String error = "Element not found";
+
+            // When
+            ReflectionResult result = reflector.reflect(action, before, null, error, 3);
+
+            // Then - should skip with dismiss-specific message, not abort
+            assertThat(result.isSkip()).isTrue();
+            assertThat(result.getReason()).contains("Dismiss step");
+            assertThat(result.getReason()).contains("already handled");
+        }
+
+        @Test
+        void shouldSkipDismissNotificationAfterMaxRetries() {
+            // Given
+            ActionStep action = ActionStepFactory.click("Dismiss notification");
+            DomSnapshot before = DomSnapshot.of("content", "url", "title");
+            String error = "Element not found";
+
+            // When
+            ReflectionResult result = reflector.reflect(action, before, null, error, 3);
+
+            // Then
+            assertThat(result.isSkip()).isTrue();
+            assertThat(result.getReason()).contains("Dismiss step");
+        }
+
+        @Test
+        void shouldSkipCloseDialogAfterMaxRetries() {
+            // Given
+            ActionStep action = ActionStepFactory.click("Close dialog");
+            DomSnapshot before = DomSnapshot.of("content", "url", "title");
+            String error = "Element not found";
+
+            // When
+            ReflectionResult result = reflector.reflect(action, before, null, error, 3);
+
+            // Then
+            assertThat(result.isSkip()).isTrue();
+        }
+
+        @Test
+        void shouldNotSkipGenericCloseAction() {
+            // Given - "Close the account settings" has no transient UI keyword
+            ActionStep action = ActionStepFactory.click("Close the account settings");
+            DomSnapshot before = DomSnapshot.of("content", "url", "title");
+            String error = "Element not found";
+
+            // When
+            ReflectionResult result = reflector.reflect(action, before, null, error, 3);
+
+            // Then - should abort, NOT skip (not a transient UI element)
+            assertThat(result.isAbort()).isTrue();
+            assertThat(result.isSkip()).isFalse();
+        }
+
+        @Test
         void shouldRetryCookieConsentBeforeMaxRetries() {
             // Given
             ActionStep action = ActionStepFactory.click("Accept Cookies");

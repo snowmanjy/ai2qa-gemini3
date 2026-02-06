@@ -170,4 +170,4 @@ GET /api/v1/test-runs/{id}/export/excel
 
 ---
 
-**Built for the Google DeepMind Gemini 3 Hackathon (Feb 2026)**
+**Built for the Google DeepMind Gemini 3 Hackathon (Jan 2026)**
