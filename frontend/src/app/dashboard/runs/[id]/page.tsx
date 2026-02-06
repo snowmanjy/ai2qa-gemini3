@@ -164,14 +164,14 @@ export default function RunDetailPage() {
                 if (isMounted) {
                     setLoading(false)
                     isInitialLoad.current = false;
-                    // Schedule next poll if status is active (even after errors, use last known status)
-                    // This ensures polling continues even if a single request fails
-                    // Also continue polling if summary is actively being generated
-                    // Note: Only poll for GENERATING, not PENDING - PENDING on a completed run
-                    // means summary was never started (e.g., old runs before this feature)
+                    // Continue polling if:
+                    // 1. Run is still active (PENDING/RUNNING)
+                    // 2. Summary is not yet ready (PENDING or GENERATING) on a completed run
+                    //    PENDING means generation hasn't kicked in yet but will soon
+                    //    GENERATING means AI is actively producing the summary
                     const runActive = currentStatus === null || ['PENDING', 'RUNNING'].includes(currentStatus);
-                    const summaryGenerating = currentSummaryStatus === 'GENERATING';
-                    if (runActive || summaryGenerating) {
+                    const summaryNotReady = currentSummaryStatus !== 'COMPLETED' && currentSummaryStatus !== 'FAILED';
+                    if (runActive || summaryNotReady) {
                         pollTimer = setTimeout(fetchData, 2000);
                     }
                 }
