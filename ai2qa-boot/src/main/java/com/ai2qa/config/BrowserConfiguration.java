@@ -36,7 +36,7 @@ public class BrowserConfiguration implements BrowserModeProvider {
      * Browser engine to use.
      * Options: puppeteer, playwright
      */
-    private String engine = "puppeteer";
+    private String engine = "playwright";
 
     /**
      * Snapshot mode for DOM snapshots.

@@ -159,11 +159,11 @@ class BrowserConfigurationTest {
     class DefaultValuesTests {
 
         @Test
-        @DisplayName("should have puppeteer as default engine")
-        void defaultEnginePuppeteer() {
+        @DisplayName("should have playwright as default engine")
+        void defaultEnginePlaywright() {
             BrowserConfiguration config = new BrowserConfiguration();
 
-            assertThat(config.getEngine()).isEqualTo("puppeteer");
+            assertThat(config.getEngine()).isEqualTo("playwright");
         }
 
         @Test
@@ -191,12 +191,12 @@ class BrowserConfigurationTest {
         }
 
         @Test
-        @DisplayName("default config should resolve to legacy mode (puppeteer + auto)")
-        void defaultConfigResolvesToLegacy() {
+        @DisplayName("default config should resolve to aria mode (playwright + auto)")
+        void defaultConfigResolvesToAria() {
             BrowserConfiguration config = new BrowserConfiguration();
 
-            assertThat(config.getEffectiveSnapshotMode()).isEqualTo("legacy");
-            assertThat(config.isAriaEffectivelyEnabled()).isFalse();
+            assertThat(config.getEffectiveSnapshotMode()).isEqualTo("aria");
+            assertThat(config.isAriaEffectivelyEnabled()).isTrue();
         }
     }
 

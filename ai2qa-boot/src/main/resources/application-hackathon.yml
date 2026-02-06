@@ -96,7 +96,7 @@ ai2qa:
   # Browser automation ENABLED for hackathon
   browser:
     enabled: true
-    engine: ${BROWSER_ENGINE:puppeteer}
+    engine: ${BROWSER_ENGINE:playwright}
     snapshot-mode: ${SNAPSHOT_MODE:auto}
     aria-enabled: ${ARIA_SNAPSHOT_ENABLED:true}
     fallback-enabled: ${BROWSER_FALLBACK:true}

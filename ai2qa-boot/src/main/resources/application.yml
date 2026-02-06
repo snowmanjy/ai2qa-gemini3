@@ -79,7 +79,7 @@ ai2qa:
   # Browser automation settings
   browser:
     # Browser engine: puppeteer | playwright
-    engine: ${BROWSER_ENGINE:puppeteer}
+    engine: ${BROWSER_ENGINE:playwright}
     # Snapshot mode: legacy | aria | auto
     # - legacy: CSS selector-based snapshots (works with Puppeteer)
     # - aria: Accessibility tree snapshots (requires Playwright engine)
