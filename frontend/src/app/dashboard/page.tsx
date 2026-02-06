@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Loader2, RefreshCw, FileText, Rocket, ChevronDown, ChevronRight } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
@@ -60,6 +61,12 @@ function getPersonaLabel(persona?: Persona) {
     return persona.charAt(0) + persona.slice(1).toLowerCase()
 }
 
+// Preset target URLs for quick selection
+const PRESET_URLS = [
+    { value: "https://automationexercise.com", label: "Automation Exercise" },
+    { value: "https://demo.owasp-juice.shop/", label: "OWASP Juice Shop" },
+]
+
 // Default goals per persona - ensures AI always has context for step generation
 const PERSONA_DEFAULT_GOALS: Record<Persona, string> = {
     STANDARD: "Thoroughly explore the page by scrolling, clicking tabs, expanding sections, and opening menus to discover all content. Document each state with screenshots and verify elements load correctly.",
@@ -77,7 +84,7 @@ export default function DashboardPage() {
     const [loading, setLoading] = useState(true)
 
     // Inline form state (default to PERFORMANCE_HAWK)
-    const [url, setUrl] = useState("")
+    const [url, setUrl] = useState("https://automationexercise.com")
     const [persona, setPersona] = useState<Persona>('PERFORMANCE_HAWK')
     const [additionalContext, setAdditionalContext] = useState("")
     const [showContext, setShowContext] = useState(false)
@@ -223,20 +230,34 @@ export default function DashboardPage() {
             <div className="rounded-xl border border-border bg-card p-6">
                 <h2 className="text-xl font-semibold text-foreground mb-4">Start a New Test</h2>
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* URL Input */}
+                    {/* URL Input with preset dropdown */}
                     <div className="space-y-2">
                         <Label htmlFor="url">
                             Target URL <span className="text-destructive" aria-label="required">*</span>
                         </Label>
-                        <Input
-                            id="url"
-                            placeholder="https://example.com"
-                            value={url}
-                            onChange={e => setUrl(e.target.value)}
-                            required
-                            aria-required="true"
-                            className="max-w-2xl"
-                        />
+                        <div className="flex gap-2 max-w-2xl">
+                            <Input
+                                id="url"
+                                placeholder="https://example.com"
+                                value={url}
+                                onChange={e => setUrl(e.target.value)}
+                                required
+                                aria-required="true"
+                                className="flex-1"
+                            />
+                            <Select value={url} onValueChange={setUrl}>
+                                <SelectTrigger className="w-[200px]">
+                                    <SelectValue placeholder="Quick pick" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {PRESET_URLS.map((site) => (
+                                        <SelectItem key={site.value} value={site.value}>
+                                            {site.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
 
                     {/* Persona Selector */}

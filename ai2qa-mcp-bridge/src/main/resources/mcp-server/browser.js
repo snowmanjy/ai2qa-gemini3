@@ -1277,11 +1277,15 @@ export async function waitFor(options = {}) {
 export async function evaluate(script, args = []) {
     const { page } = await ensureBrowser();
 
-    // Create function from script string
-    // Wrap script in 'return (...)' to ensure expression results are returned
-    // This handles both IIFE scripts and regular expressions
-    const wrappedScript = 'return (' + script + ')';
-    const fn = new Function('...args', wrappedScript);
+    // Try expression-style first (handles IIFEs and simple expressions),
+    // fall back to statement-style for scripts with const/let/var declarations.
+    let fn;
+    try {
+        fn = new Function('...args', 'return (' + script + ')');
+    } catch {
+        // Script contains statements (const, let, var, etc.) - wrap in async IIFE
+        fn = new Function('...args', script);
+    }
     const result = await page.evaluate(fn, ...args);
 
     return { result };
