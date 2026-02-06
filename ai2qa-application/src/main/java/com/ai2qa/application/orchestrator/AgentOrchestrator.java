@@ -51,11 +51,46 @@ public class AgentOrchestrator {
 
     /**
      * Fallback CSS selectors to try when AI obstacle detection fails.
-     * These target common consent/cookie banner buttons that the AI might miss,
-     * especially when consent dialogs are in iframes not captured in the snapshot.
-     * Inspired by the "chaos monster" persona accidentally clicking consent buttons.
+     * These target common consent/cookie banner AND welcome modal buttons that the AI might miss,
+     * especially when dialogs are in iframes not captured in the snapshot.
+     * Inspired by the "chaos monster" persona accidentally clicking dismiss buttons.
      */
-    private static final List<String> FALLBACK_CONSENT_SELECTORS = List.of(
+    private static final List<String> FALLBACK_OBSTACLE_SELECTORS = List.of(
+            // === WELCOME/INTRO MODALS (try first - often block main content) ===
+            // Dismiss/Close buttons by aria-label
+            "button[aria-label*='Dismiss']",
+            "button[aria-label*='dismiss']",
+            "button[aria-label*='Close']",
+            "button[aria-label*='close']",
+            "button[aria-label*='Skip']",
+            "button[aria-label*='skip']",
+            // Welcome modal specific patterns
+            "[data-testid*='dismiss']",
+            "[data-testid*='close-modal']",
+            "[data-testid*='welcome-close']",
+            "[data-cy*='dismiss']",
+            "[data-cy*='close']",
+            // Generic modal close buttons
+            "button[class*='dismiss']",
+            "button[class*='close-modal']",
+            "button[class*='modal-close']",
+            ".modal button[class*='close']",
+            ".modal-close",
+            ".dialog-close",
+            "[role='dialog'] button[class*='close']",
+            "[aria-modal='true'] button[class*='close']",
+            // Title-based
+            "button[title='Dismiss']",
+            "button[title='Close']",
+            "button[title='Skip']",
+            // ID-based welcome/intro patterns
+            "button[id*='dismiss']",
+            "button[id*='welcome-close']",
+            "button[id*='intro-close']",
+            "#dismiss-button",
+            "#close-modal",
+
+            // === COOKIE CONSENT ===
             // OneTrust (CNN, many news sites)
             "#onetrust-accept-btn-handler",
             "button[id*='onetrust-accept']",
@@ -75,13 +110,28 @@ public class AgentOrchestrator {
             "[data-cy*='accept']",
             // ARIA labels
             "button[aria-label*='Accept']",
-            "button[aria-label*='Agree']",
-            // Text-based (less reliable but catches edge cases)
-            "button:contains('Accept All')",
-            "button:contains('I Accept')",
-            "button:contains('I Agree')",
-            "button:contains('Agree')",
-            "button:contains('Accept')"
+            "button[aria-label*='Agree']"
+    );
+
+    /**
+     * Text patterns to search for when CSS selectors fail.
+     * These are matched against button text content using JavaScript.
+     */
+    private static final List<String> FALLBACK_BUTTON_TEXTS = List.of(
+            // Welcome modal texts (prioritized)
+            "Dismiss",
+            "Got it",
+            "Skip",
+            "Close",
+            "Not now",
+            "Maybe later",
+            // Consent texts
+            "Accept All",
+            "Accept all",
+            "I Accept",
+            "I Agree",
+            "Agree",
+            "Accept"
     );
 
     private final StepPlanner stepPlanner;
@@ -747,73 +797,133 @@ public class AgentOrchestrator {
     }
 
     /**
-     * Tries fallback CSS selectors to dismiss consent dialogs when AI detection fails.
-     * This is the "chaos monster" strategy - blindly try clicking common consent button selectors.
-     * Useful when consent dialogs are in iframes not captured in the DOM snapshot.
+     * Tries fallback CSS selectors and text patterns for common obstacles.
+     * This is the "chaos monster" strategy - blindly try clicking common dismiss button selectors.
+     * Useful when obstacles are in iframes not captured in the DOM snapshot.
      *
      * @param testRun Current test run
      * @param snapshot Current DOM snapshot
      * @return Updated snapshot if a click succeeded, or original snapshot if nothing worked
      */
     private DomSnapshot tryFallbackConsentSelectors(TestRun testRun, DomSnapshot snapshot) {
-        log.info("[OBSTACLE] AI found no obstacle - trying {} fallback consent selectors...",
-                FALLBACK_CONSENT_SELECTORS.size());
+        log.info("[OBSTACLE] AI found no obstacle - trying {} fallback selectors + {} text patterns...",
+                FALLBACK_OBSTACLE_SELECTORS.size(), FALLBACK_BUTTON_TEXTS.size());
 
-        for (String selector : FALLBACK_CONSENT_SELECTORS) {
-            try {
-                // Pre-click delay
-                sleeper.sleep(100);
-
-                // Try JS click (more reliable for elements in iframes or with overlays)
-                String jsClickScript = String.format(
-                        "const el = document.querySelector('%s'); " +
-                        "if (el && el.offsetParent !== null) { el.click(); 'clicked'; } else { 'not found'; }",
-                        selector.replace("'", "\\'"));
-
-                Map<String, Object> result = getBrowserDriver().callTool("evaluate", Map.of("script", jsClickScript));
-
-                // Check if click succeeded (element was found and clicked)
-                String clickResult = extractEvaluateResult(result);
-                if ("clicked".equals(clickResult)) {
-                    log.info("[OBSTACLE] Fallback selector '{}' clicked successfully!", selector);
-
-                    // Wait for overlay to disappear
-                    sleeper.sleep(500);
-
-                    // Re-snapshot
-                    DomSnapshot newSnapshot = getSnapshot();
-
-                    // Record as auto-generated step for audit trail
-                    ActionStep fallbackAction = ActionStepFactory.withSelector(
-                            ActionStepFactory.click("Fallback consent click"),
-                            selector);
-                    ExecutedStep fallbackStep = ExecutedStep.success(
-                            fallbackAction,
-                            selector,
-                            snapshot,
-                            newSnapshot,
-                            600, // 100ms pre + 500ms post
-                            0,
-                            null,
-                            null,
-                            null,
-                            List.of(),
-                            clock.instant());
-                    int stepIndex = testRun.getExecutedSteps().size();
-                    saveScreenshot(testRun.getId().value().toString(), stepIndex);
-                    testRun.recordStepExecution(fallbackStep, clock.instant());
-                    testRunRepository.save(testRun);
-
-                    return newSnapshot;
-                }
-            } catch (Exception e) {
-                // Selector didn't work, try next one
-                log.debug("[OBSTACLE] Fallback selector '{}' failed: {}", selector, e.getMessage());
+        // First, try CSS selectors
+        for (String selector : FALLBACK_OBSTACLE_SELECTORS) {
+            DomSnapshot result = tryClickSelector(testRun, snapshot, selector, "CSS selector");
+            if (result != snapshot) {
+                return result;
             }
         }
 
-        log.info("[OBSTACLE] No fallback selectors matched - proceeding without consent dismissal");
+        // If CSS selectors failed, try text-based button matching
+        for (String buttonText : FALLBACK_BUTTON_TEXTS) {
+            DomSnapshot result = tryClickButtonByText(testRun, snapshot, buttonText);
+            if (result != snapshot) {
+                return result;
+            }
+        }
+
+        log.info("[OBSTACLE] No fallback selectors or text patterns matched - proceeding without obstacle dismissal");
         return snapshot;
+    }
+
+    /**
+     * Tries to click an element by CSS selector.
+     */
+    private DomSnapshot tryClickSelector(TestRun testRun, DomSnapshot snapshot, String selector, String selectorType) {
+        try {
+            // Pre-click delay
+            sleeper.sleep(100);
+
+            // Try JS click (more reliable for elements in iframes or with overlays)
+            String jsClickScript = String.format(
+                    "const el = document.querySelector('%s'); " +
+                    "if (el && el.offsetParent !== null) { el.click(); 'clicked'; } else { 'not found'; }",
+                    selector.replace("'", "\\'"));
+
+            Map<String, Object> result = getBrowserDriver().callTool("evaluate", Map.of("script", jsClickScript));
+
+            // Check if click succeeded (element was found and clicked)
+            String clickResult = extractEvaluateResult(result);
+            if ("clicked".equals(clickResult)) {
+                log.info("[OBSTACLE] Fallback {} '{}' clicked successfully!", selectorType, selector);
+                return recordFallbackClick(testRun, snapshot, selector);
+            }
+        } catch (Exception e) {
+            // Selector didn't work, try next one
+            log.debug("[OBSTACLE] Fallback {} '{}' failed: {}", selectorType, selector, e.getMessage());
+        }
+        return snapshot;
+    }
+
+    /**
+     * Tries to click a button by its visible text content.
+     * This handles cases where buttons don't have reliable CSS selectors.
+     */
+    private DomSnapshot tryClickButtonByText(TestRun testRun, DomSnapshot snapshot, String buttonText) {
+        try {
+            // Pre-click delay
+            sleeper.sleep(100);
+
+            // JavaScript to find and click button by text content
+            // Searches buttons, links, and elements with button role
+            String jsClickScript = String.format(
+                    "const text = '%s';" +
+                    "const elements = [...document.querySelectorAll('button, a, [role=\"button\"], input[type=\"button\"], input[type=\"submit\"]')];" +
+                    "const el = elements.find(e => {" +
+                    "  const elText = (e.textContent || e.value || '').trim();" +
+                    "  return elText === text || elText.toLowerCase() === text.toLowerCase();" +
+                    "});" +
+                    "if (el && el.offsetParent !== null) { el.click(); 'clicked'; } else { 'not found'; }",
+                    buttonText.replace("'", "\\'"));
+
+            Map<String, Object> result = getBrowserDriver().callTool("evaluate", Map.of("script", jsClickScript));
+
+            String clickResult = extractEvaluateResult(result);
+            if ("clicked".equals(clickResult)) {
+                log.info("[OBSTACLE] Fallback text match '{}' clicked successfully!", buttonText);
+                return recordFallbackClick(testRun, snapshot, "text:" + buttonText);
+            }
+        } catch (Exception e) {
+            log.debug("[OBSTACLE] Fallback text match '{}' failed: {}", buttonText, e.getMessage());
+        }
+        return snapshot;
+    }
+
+    /**
+     * Records a successful fallback click as an executed step.
+     */
+    private DomSnapshot recordFallbackClick(TestRun testRun, DomSnapshot beforeSnapshot, String selectorOrText) {
+        // Wait for overlay to disappear
+        sleeper.sleep(500);
+
+        // Re-snapshot
+        DomSnapshot newSnapshot = getSnapshot();
+
+        // Record as auto-generated step for audit trail
+        ActionStep fallbackAction = ActionStepFactory.withSelector(
+                ActionStepFactory.click("Fallback obstacle click"),
+                selectorOrText);
+        ExecutedStep fallbackStep = ExecutedStep.success(
+                fallbackAction,
+                selectorOrText,
+                beforeSnapshot,
+                newSnapshot,
+                600, // 100ms pre + 500ms post
+                0,
+                null,
+                null,
+                null,
+                List.of(),
+                clock.instant());
+        int stepIndex = testRun.getExecutedSteps().size();
+        saveScreenshot(testRun.getId().value().toString(), stepIndex);
+        testRun.recordStepExecution(fallbackStep, clock.instant());
+        testRunRepository.save(testRun);
+
+        return newSnapshot;
     }
 
     /**

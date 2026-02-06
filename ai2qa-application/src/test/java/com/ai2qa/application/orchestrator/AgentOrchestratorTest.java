@@ -1379,8 +1379,9 @@ class AgentOrchestratorTest {
                 orchestrator.execute(testRun);
 
                 // Assert - fallback selectors (evaluate calls) should have reasonable upper bound
-                // Each step tries all ~20 selectors once = ~40 evaluate calls for 2 steps
-                verify(browserDriver, atMost(50)).callTool(eq("evaluate"), any());
+                // Each step tries all ~50 CSS selectors + ~12 text patterns = ~62 per step
+                // For 2 steps that's ~124 evaluate calls
+                verify(browserDriver, atMost(130)).callTool(eq("evaluate"), any());
             }
 
             @Test

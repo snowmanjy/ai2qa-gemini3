@@ -56,8 +56,8 @@ export default function RootLayout({
             <main id="main-content" className="min-h-screen bg-background">
               {children}
             </main>
-            {/* Theme toggle in bottom-right corner */}
-            <div className="fixed bottom-4 right-4 z-50">
+            {/* Theme toggle in bottom-left corner (right corner reserved for reCAPTCHA badge) */}
+            <div className="fixed bottom-4 left-4 z-50">
               <ThemeToggle />
             </div>
             <Toaster />

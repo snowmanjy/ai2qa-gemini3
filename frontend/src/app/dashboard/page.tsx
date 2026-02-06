@@ -17,7 +17,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Loader2, RefreshCw, FileText, Sparkles, Rocket, ChevronDown, ChevronRight } from "lucide-react"
+import { Loader2, RefreshCw, FileText, Rocket, ChevronDown, ChevronRight } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 import { format } from "date-fns"
@@ -208,14 +208,6 @@ export default function DashboardPage() {
                 <div>
                     <h1 className="text-2xl md:text-3xl font-bold text-foreground">AI-Powered QA Testing</h1>
                     <p className="text-muted-foreground mt-1">Enter a URL, choose a persona, watch AI find bugs</p>
-                </div>
-                <div className="flex items-center gap-3">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-600/30 to-purple-600/30 border border-blue-500/50 shadow-lg shadow-blue-500/20">
-                        <Sparkles className="h-5 w-5 text-blue-400" />
-                        <span className="text-sm font-semibold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                            Powered by Gemini 3 Flash
-                        </span>
-                    </div>
                 </div>
             </div>
 
