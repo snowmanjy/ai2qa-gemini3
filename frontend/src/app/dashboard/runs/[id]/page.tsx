@@ -171,6 +171,12 @@ export default function RunDetailPage() {
                     //    GENERATING means AI is actively producing the summary
                     const runActive = currentStatus === null || ['PENDING', 'RUNNING'].includes(currentStatus);
                     const summaryNotReady = currentSummaryStatus !== 'COMPLETED' && currentSummaryStatus !== 'FAILED';
+
+                    // Clear active run from sidebar when this run finishes
+                    if (!runActive && sessionStorage.getItem("activeRunId") === id) {
+                        sessionStorage.removeItem("activeRunId");
+                    }
+
                     if (runActive || summaryNotReady) {
                         pollTimer = setTimeout(fetchData, 2000);
                     }

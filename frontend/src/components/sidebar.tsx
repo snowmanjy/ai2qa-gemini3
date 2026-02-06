@@ -7,8 +7,6 @@ import { cn } from "@/lib/utils";
 import { LayoutDashboard, FileText, Sparkles } from "lucide-react";
 import Image from "next/image";
 
-const RUN_PATH_RE = /^\/dashboard\/runs\/([^/]+)/;
-
 const routes = [
     {
         label: "Test Runs",
@@ -21,21 +19,12 @@ const routes = [
 export function Sidebar() {
     const pathname = usePathname();
 
-    // Track current run ID - persist in sessionStorage so it survives navigation
-    const [currentRunId, setCurrentRunId] = useState<string | null>(null);
+    // Track the actively running test run (set when a run is created, cleared when it finishes)
+    const [activeRunId, setActiveRunId] = useState<string | null>(null);
 
     useEffect(() => {
-        // Check if viewing a specific run
-        const runMatch = pathname.match(RUN_PATH_RE);
-        if (runMatch) {
-            const runId = runMatch[1];
-            setCurrentRunId(runId);
-            sessionStorage.setItem("currentRunId", runId);
-        } else {
-            // Not on a run page - restore from session storage
-            const storedRunId = sessionStorage.getItem("currentRunId");
-            setCurrentRunId(storedRunId);
-        }
+        const storedId = sessionStorage.getItem("activeRunId");
+        setActiveRunId(storedId);
     }, [pathname]);
 
     return (
@@ -79,21 +68,21 @@ export function Sidebar() {
                             </div>
                         </Link>
                     ))}
-                    {/* Current Run link - always visible when a run ID exists */}
-                    {currentRunId && (
+                    {/* Active Run link - visible only while a test run is in progress */}
+                    {activeRunId && (
                         <Link
-                            href={`/dashboard/runs/${currentRunId}`}
-                            aria-current={pathname.startsWith(`/dashboard/runs/${currentRunId}`) ? "page" : undefined}
+                            href={`/dashboard/runs/${activeRunId}`}
+                            aria-current={pathname.startsWith(`/dashboard/runs/${activeRunId}`) ? "page" : undefined}
                             className={cn(
                                 "text-base group flex p-3 w-full justify-start font-medium cursor-pointer hover:bg-accent rounded-lg transition",
-                                pathname.startsWith(`/dashboard/runs/${currentRunId}`)
+                                pathname.startsWith(`/dashboard/runs/${activeRunId}`)
                                     ? "text-accent-foreground bg-accent"
                                     : "text-muted-foreground"
                             )}
                         >
                             <div className="flex items-center flex-1">
                                 <FileText className="h-5 w-5 mr-3 text-amber-500" aria-hidden="true" />
-                                Current Run
+                                Active Run
                             </div>
                         </Link>
                     )}

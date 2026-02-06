@@ -172,6 +172,7 @@ export default function DashboardPage() {
 
             // Navigate to the new test run page for live updates
             if (res.data?.id) {
+                sessionStorage.setItem("activeRunId", res.data.id)
                 router.push(`/dashboard/runs/${res.data.id}`)
             }
         } catch (error: unknown) {
