@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -22,6 +23,37 @@ public class Reflector {
     private static final Logger log = LoggerFactory.getLogger(Reflector.class);
 
     private static final int DEFAULT_WAIT_MS = 1000;
+
+    private static final List<String> COOKIE_CONSENT_PATTERNS = List.of(
+            "cookie", "consent", "accept all", "accept cookies", "gdpr", "privacy"
+    );
+
+    private static final List<String> LEGAL_PATTERNS = List.of(
+            "agree", "legal", "terms", "tos", "i accept"
+    );
+
+    private static final List<String> POPUP_PATTERNS = List.of(
+            "newsletter", "popup", "dismiss", "close modal", "no thanks"
+    );
+
+    private static final List<String> CHAT_PATTERNS = List.of(
+            "chat widget", "chatbot", "live chat"
+    );
+
+    private static final List<String> AD_PATTERNS = List.of(
+            "ad feedback", "ad_feedback", "ad choice", "ad-feedback"
+    );
+
+    private static final List<String> DISMISS_VERBS = List.of("close", "dismiss");
+
+    private static final List<String> TRANSIENT_UI_TYPES = List.of(
+            "banner", "modal", "dialog", "overlay", "notification",
+            "alert", "welcome", "announcement", "toast", "popover"
+    );
+
+    private static final List<String> WELCOME_QUALIFIERS = List.of(
+            "banner", "modal", "screen", "got it", "skip"
+    );
 
     private final OrchestratorConfigProvider config;
 
@@ -178,12 +210,13 @@ public class Reflector {
         if (retryCount >= config.getMaxRetries()) {
             // For optional steps like cookie consent, skip instead of abort
             if (isOptionalStep(action)) {
+                String stepDesc = getStepDescription(action);
+                String skipReason = isDismissAction(action)
+                        ? String.format("Dismiss step '%s' skipped: element already handled", stepDesc)
+                        : String.format("Optional step '%s' skipped: element not present on page", stepDesc);
                 log.info("Skipping optional step '{}' after {} attempts: element not found",
                         action.target(), retryCount + 1);
-                return ReflectionResult.skip(
-                        String.format("Optional step '%s' skipped: element not present on page",
-                                getStepDescription(action))
-                );
+                return ReflectionResult.skip(skipReason);
             }
             return ReflectionResult.abort(
                     String.format("Action '%s' failed after %d attempts: %s",
@@ -247,45 +280,39 @@ public class Reflector {
      *   <li>Newsletter popup dismissal - may not appear</li>
      *   <li>Chat widget interactions - may not be loaded</li>
      *   <li>Ad feedback/ad choice widgets - intermittent appearance</li>
+     *   <li>Close/dismiss of transient UI (banners, modals, dialogs, overlays, etc.)</li>
+     *   <li>Welcome screens/banners that may have been auto-dismissed</li>
      * </ul>
      */
     private boolean isOptionalStep(ActionStep action) {
         String target = Optional.ofNullable(action.target()).orElse("").toLowerCase();
 
-        // Cookie consent patterns
-        if (target.contains("cookie") || target.contains("consent") ||
-            target.contains("accept all") || target.contains("accept cookies") ||
-            target.contains("gdpr") || target.contains("privacy")) {
-            return true;
-        }
+        return matchesAny(target, COOKIE_CONSENT_PATTERNS)
+                || matchesAny(target, LEGAL_PATTERNS)
+                || matchesAny(target, POPUP_PATTERNS)
+                || matchesAny(target, CHAT_PATTERNS)
+                || matchesAny(target, AD_PATTERNS)
+                || isDismissOfTransientElement(target)
+                || isWelcomeElement(target);
+    }
 
-        // Legal/TOS agreement patterns
-        if (target.contains("agree") || target.contains("legal") ||
-            target.contains("terms") || target.contains("tos") ||
-            target.contains("i accept")) {
-            return true;
-        }
+    private boolean isDismissAction(ActionStep action) {
+        String target = Optional.ofNullable(action.target()).orElse("").toLowerCase();
+        return isDismissOfTransientElement(target) || isWelcomeElement(target);
+    }
 
-        // Newsletter/popup dismissal patterns
-        if (target.contains("newsletter") || target.contains("popup") ||
-            target.contains("dismiss") || target.contains("close modal") ||
-            target.contains("no thanks")) {
-            return true;
-        }
+    private boolean matchesAny(String target, List<String> patterns) {
+        return patterns.stream().anyMatch(target::contains);
+    }
 
-        // Chat widget patterns
-        if (target.contains("chat widget") || target.contains("chatbot") ||
-            target.contains("live chat")) {
-            return true;
-        }
+    private boolean isDismissOfTransientElement(String target) {
+        return matchesAny(target, DISMISS_VERBS)
+                && matchesAny(target, TRANSIENT_UI_TYPES);
+    }
 
-        // Ad feedback patterns (common on news sites like CNN)
-        if (target.contains("ad feedback") || target.contains("ad_feedback") ||
-            target.contains("ad choice") || target.contains("ad-feedback")) {
-            return true;
-        }
-
-        return false;
+    private boolean isWelcomeElement(String target) {
+        return target.contains("welcome")
+                && matchesAny(target, WELCOME_QUALIFIERS);
     }
 
     /**
