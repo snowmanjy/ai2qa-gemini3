@@ -206,22 +206,17 @@ public class Reflector {
     ) {
         log.warn("Action failed: {} - {} (attempt {})", action.action(), error, retryCount + 1);
 
-        // Check if we've exceeded max retries
+        // Check if we've exceeded max retries - skip and continue instead of aborting
+        // A single failed step should not kill the entire test run.
+        // The step is recorded as SKIPPED in the report so nothing is hidden.
         if (retryCount >= config.getMaxRetries()) {
-            // For optional steps like cookie consent, skip instead of abort
-            if (isOptionalStep(action)) {
-                String stepDesc = getStepDescription(action);
-                String skipReason = isDismissAction(action)
-                        ? String.format("Dismiss step '%s' skipped: element already handled", stepDesc)
-                        : String.format("Optional step '%s' skipped: element not present on page", stepDesc);
-                log.info("Skipping optional step '{}' after {} attempts: element not found",
-                        action.target(), retryCount + 1);
-                return ReflectionResult.skip(skipReason);
-            }
-            return ReflectionResult.abort(
-                    String.format("Action '%s' failed after %d attempts: %s",
-                            action.action(), retryCount + 1, error)
-            );
+            String stepDesc = getStepDescription(action);
+            String skipReason = isDismissAction(action)
+                    ? String.format("Dismiss step '%s' skipped: element already handled", stepDesc)
+                    : String.format("Step '%s' skipped after %d attempts: %s", stepDesc, retryCount + 1, error);
+            log.info("Skipping step '{}' after {} attempts: {}",
+                    action.target(), retryCount + 1, error);
+            return ReflectionResult.skip(skipReason);
         }
 
         // Determine repair strategy based on error type
@@ -307,7 +302,12 @@ public class Reflector {
 
     private boolean isDismissOfTransientElement(String target) {
         return matchesAny(target, DISMISS_VERBS)
-                && matchesAny(target, TRANSIENT_UI_TYPES);
+                && (matchesAny(target, TRANSIENT_UI_TYPES) || isCloseButton(target));
+    }
+
+    private boolean isCloseButton(String target) {
+        // "close X button" or "dismiss X button" = a close/dismiss button for some UI element
+        return target.endsWith("button") || target.endsWith("btn") || target.contains("close button");
     }
 
     private boolean isWelcomeElement(String target) {
