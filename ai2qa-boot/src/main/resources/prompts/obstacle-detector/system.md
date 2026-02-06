@@ -13,6 +13,7 @@ Analyze the provided DOM snapshot and determine:
 - **Cookie consent banners**: "Accept", "Accept All", "Agree", "OK", "Got it", "Allow", "I Accept", "I agree"
 - **Legal/Privacy/TOS popups**: "Agree", "Accept", "I Agree", "Accept Terms", "Continue", "Accept and Continue", "Agree & Proceed", "I Accept", "Accept All"
 - **Terms of Service overlays**: Look for buttons near text mentioning "Terms", "Privacy Policy", "legal", "consent"
+- **Welcome/Intro/Onboarding modals**: "Dismiss", "Close", "Got it", "Skip", "Continue", "Get Started", "X" - Look for modals with "Welcome", "Getting Started", "Introduction", "Tour", "What's New"
 - **Newsletter popups**: "No thanks", "Close", "X", "Maybe later", "Dismiss"
 - **Age verification**: "I am 18+", "Enter", "Yes", "Confirm"
 - **Location/notification requests**: "Allow", "Block", "Not now", "Later"
@@ -31,15 +32,16 @@ Look for these patterns in the DOM:
 
 1. **Modal/Dialog indicators**:
    - `role="dialog"`, `role="alertdialog"`, `aria-modal="true"`
-   - Classes containing: `modal`, `popup`, `overlay`, `dialog`, `banner`, `consent`, `gdpr`, `cookie`, `sp_message`, `fc-consent`
-   - IDs containing: `onetrust`, `consent`, `privacy`, `legal`, `tos`
+   - Classes containing: `modal`, `popup`, `overlay`, `dialog`, `banner`, `consent`, `gdpr`, `cookie`, `sp_message`, `fc-consent`, `welcome`, `intro`, `onboarding`, `tour`
+   - IDs containing: `onetrust`, `consent`, `privacy`, `legal`, `tos`, `welcome`, `intro`, `onboarding`
+   - Text content containing: "Welcome", "Getting Started", "Introduction", "What's New", "Tour"
    - Fixed/absolute positioning with high z-index
    - Elements covering the viewport
 
 2. **Dismiss button indicators**:
-   - `aria-label` containing: close, dismiss, accept, agree, ok, got it
-   - Button text: Accept, Agree, OK, Close, X, Got it, Allow, Continue, I Agree, I Accept
-   - IDs: `onetrust-accept-btn-handler`, `accept-btn`, `consent-btn`, `agree-btn`
+   - `aria-label` containing: close, dismiss, accept, agree, ok, got it, skip
+   - Button text: Accept, Agree, OK, Close, X, Got it, Allow, Continue, I Agree, I Accept, **Dismiss**, Skip, Later, Not Now
+   - IDs: `onetrust-accept-btn-handler`, `accept-btn`, `consent-btn`, `agree-btn`, `dismiss-btn`, `close-btn`
    - Icons: X, close icon, checkmark for acceptance
    - Classes: `close`, `dismiss`, `accept`, `agree`, `btn-primary`, `accept-all`, `sp_choice_type_11`, `fc-cta-consent`
 
@@ -53,10 +55,11 @@ Look for these patterns in the DOM:
 **IMPORTANT: Obstacle priority order (highest to lowest):**
 1. **Legal/TOS agreements** - MUST be dismissed first as they block everything
 2. **Cookie consent banners** - Block page interaction
-3. **Age verification** - Block content access
-4. **Login/signup modals** - Block content access
-5. **Newsletter/promotional popups** - Lower priority
-6. **Ad feedback widgets** - LOWEST priority (these rarely block interaction)
+3. **Welcome/Intro/Onboarding modals** - Block content access (common on first visit)
+4. **Age verification** - Block content access
+5. **Login/signup modals** - Block content access
+6. **Newsletter/promotional popups** - Lower priority
+7. **Ad feedback widgets** - LOWEST priority (these rarely block interaction)
 
 **Other rules:**
 - **Always prefer "Accept/Agree" over "Close/X"** for consent dialogs (user wants to proceed)
@@ -130,3 +133,11 @@ If NO obstacle is detected:
 - Don't report: navigation menus, headers, footers, sidebars, inline forms
 - The dismiss selector should be the MOST RELIABLE way to dismiss (prefer aria-label, data-testid, unique IDs)
 - If multiple obstacles exist, report the TOPMOST one (highest z-index, most blocking)
+
+**CRITICAL: Blocking priority by position:**
+1. **CENTER modals** (covering main content) - MOST BLOCKING, dismiss first
+2. **Full-screen overlays** - Block everything
+3. **Top banners** - May push content down
+4. **Corner popups** (bottom-right cookie banners, chat widgets) - LEAST BLOCKING, dismiss last
+
+A centered "Welcome" modal blocking the main content is MORE important to dismiss than a corner cookie banner!

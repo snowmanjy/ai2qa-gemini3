@@ -36,18 +36,23 @@ public class ObstacleDetector {
     private static final int MAX_DOM_LENGTH = 15000;
     private static final int MAX_CONSENT_EXTRACT_LENGTH = 5000;
 
-    // Patterns that indicate consent/obstacle content (case-insensitive)
-    // CNN uses OneTrust, SourcePoint (sp_message), and WBD consent managers
-    private static final java.util.regex.Pattern CONSENT_SECTION_PATTERN = java.util.regex.Pattern.compile(
+    // Patterns that indicate obstacle content (modals, popups, banners - case-insensitive)
+    // Includes consent managers AND welcome/intro modals
+    private static final java.util.regex.Pattern OBSTACLE_SECTION_PATTERN = java.util.regex.Pattern.compile(
             "(?i)(IFRAME CONTENT|CONSENT|cookie|onetrust|privacy.?banner|gdpr|" +
             "sp_message|fc-consent|legal.?agreement|terms.?of.?service|" +
             "\"Agree\"|\"Accept\"|accept.*button|agree.*button|" +
-            "wbd|warner|cmp-|privacy-?manager|truste|evidon)"  // Added more consent manager patterns
+            "wbd|warner|cmp-|privacy-?manager|truste|evidon|" +
+            // Welcome/intro modal patterns
+            "welcome|getting.?started|introduction|onboarding|tour|what.?s.?new|" +
+            "\"Dismiss\"|dismiss.*button|\"Skip\"|skip.*button|\"Close\"|close.*button|" +
+            "role=.?dialog|aria-modal|modal|popup|overlay)"
     );
 
-    // Quick check patterns to see if DOM has ANY consent-related content
-    private static final java.util.regex.Pattern QUICK_CONSENT_CHECK = java.util.regex.Pattern.compile(
-            "(?i)(accept|agree|consent|cookie|privacy|gdpr|onetrust|sp_message)"
+    // Quick check patterns to see if DOM has ANY obstacle-related content
+    private static final java.util.regex.Pattern QUICK_OBSTACLE_CHECK = java.util.regex.Pattern.compile(
+            "(?i)(accept|agree|consent|cookie|privacy|gdpr|onetrust|sp_message|" +
+            "welcome|dismiss|skip|modal|dialog|popup|overlay|tour|onboarding)"
     );
 
     private final ChatClientPort chatClient;
@@ -79,17 +84,17 @@ public class ObstacleDetector {
         }
 
         try {
-            // Quick diagnostic: does the DOM contain ANY consent-related keywords?
-            boolean hasConsentKeywords = QUICK_CONSENT_CHECK.matcher(snapshot.content()).find();
-            log.info("[OBSTACLE] Scanning page (DOM: {} chars, URL: {}, consent keywords present: {})",
-                    snapshot.content().length(), snapshot.url(), hasConsentKeywords);
+            // Quick diagnostic: does the DOM contain ANY obstacle-related keywords?
+            boolean hasObstacleKeywords = QUICK_OBSTACLE_CHECK.matcher(snapshot.content()).find();
+            log.info("[OBSTACLE] Scanning page (DOM: {} chars, URL: {}, obstacle keywords present: {})",
+                    snapshot.content().length(), snapshot.url(), hasObstacleKeywords);
 
-            // If no consent keywords found, log a sample of the DOM for debugging
-            if (!hasConsentKeywords) {
+            // If no obstacle keywords found, log a sample of the DOM for debugging
+            if (!hasObstacleKeywords) {
                 String domSample = snapshot.content().length() > 1000
                         ? snapshot.content().substring(0, 1000) + "..."
                         : snapshot.content();
-                log.debug("[OBSTACLE] DOM sample (no consent keywords): {}", domSample);
+                log.debug("[OBSTACLE] DOM sample (no obstacle keywords): {}", domSample);
             }
 
             String userPrompt = buildUserPrompt(snapshot);
@@ -176,7 +181,7 @@ public class ObstacleDetector {
 
     private String findConsentLines(String dom) {
         return Arrays.stream(dom.split("\n"))
-                .filter(line -> CONSENT_SECTION_PATTERN.matcher(line).find())
+                .filter(line -> OBSTACLE_SECTION_PATTERN.matcher(line).find())
                 .limit(50)
                 .collect(Collectors.collectingAndThen(
                         Collectors.joining("\n"),
