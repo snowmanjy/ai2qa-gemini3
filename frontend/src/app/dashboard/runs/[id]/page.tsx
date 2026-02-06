@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, useRef, useMemo } from "react"
-import { api } from "@/lib/api"
+import { api, API_BASE_URL } from "@/lib/api"
 import { TestRun } from "@/types"
 import { useParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -235,7 +235,7 @@ export default function RunDetailPage() {
                         size="sm"
                         onClick={() => {
                             trackExport('excel');
-                            const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+                            const baseUrl = API_BASE_URL;
                             downloadWithAuth(`${baseUrl}/test-runs/${id}/export/excel`, `test-run-${id}.xlsx`);
                         }}
                         title="Download Excel report"
@@ -248,7 +248,7 @@ export default function RunDetailPage() {
                         size="sm"
                         onClick={() => {
                             trackExport('pdf');
-                            const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+                            const baseUrl = API_BASE_URL;
                             downloadWithAuth(`${baseUrl}/test-runs/${id}/export/pdf`, `test-run-${id}.pdf`);
                         }}
                         title="Download visual report with screenshots"
@@ -268,7 +268,7 @@ export default function RunDetailPage() {
                             <DropdownMenuItem
                                 onClick={() => {
                                     trackExport('code', 'java');
-                                    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+                                    const baseUrl = API_BASE_URL;
                                     downloadWithAuth(`${baseUrl}/test-runs/${id}/export/code?lang=JAVA`, `test-run-${id}.java`);
                                 }}
                             >
@@ -278,7 +278,7 @@ export default function RunDetailPage() {
                             <DropdownMenuItem
                                 onClick={() => {
                                     trackExport('code', 'typescript');
-                                    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+                                    const baseUrl = API_BASE_URL;
                                     downloadWithAuth(`${baseUrl}/test-runs/${id}/export/code?lang=TYPESCRIPT`, `test-run-${id}.ts`);
                                 }}
                             >
@@ -481,7 +481,7 @@ export default function RunDetailPage() {
                                                         <ImageIcon className="h-3 w-3" /> Screenshot
                                                     </div>
                                                     <img
-                                                        src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1'}/artifacts/${id}/${i}`}
+                                                        src={`${API_BASE_URL}/artifacts/${id}/${i}`}
                                                         alt={`Step ${i + 1} screenshot`}
                                                         className="rounded-lg border border-border w-full object-cover object-top bg-background"
                                                         style={{ maxHeight: '600px' }}
