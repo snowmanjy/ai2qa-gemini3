@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Service to enforce a global daily cap on test runs.
- * Used for hackathon demo to prevent abuse without complex rate limiting.
+ * Prevents abuse without complex rate limiting.
  */
 @Service
 public class DailyCapService {

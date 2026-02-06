@@ -1,5 +1,5 @@
 # =============================================================================
-# Hackathon Profile - Google DeepMind Gemini 3 Hackathon (Feb 2026)
+# Hackathon Profile
 # =============================================================================
 # Zero-setup deployment: H2 in-memory DB, browser automation enabled
 # Use with: SPRING_PROFILES_ACTIVE=hackathon
@@ -44,13 +44,14 @@ spring:
             options:
               model: ${VERTEX_AI_MODEL:gemini-3-flash-preview}
               temperature: ${AI_TEMPERATURE:0.2}
+              max-output-tokens: ${AI_MAX_OUTPUT_TOKENS:8192}
 
 # Server
 server:
   port: 8080
   shutdown: graceful
 
-# CORS Configuration for Hackathon
+# CORS Configuration
 app:
   cors:
     allowed-origins: "*"
@@ -82,10 +83,13 @@ logging:
   pattern:
     console: '{"timestamp":"%d{ISO8601}","level":"%level","logger":"%logger","message":"%msg"}%n'
 
-# Ai2QA Hackathon Settings
+# Ai2QA Settings
 ai2qa:
   # Daily global cap on test runs (prevent abuse)
   daily-cap: ${DAILY_CAP:50}
+  # Test run deletion
+  test-run:
+    delete-enabled: ${AI2QA_TEST_RUN_DELETE_ENABLED:true}
 
   # AI Provider - Vertex AI / Gemini only
   ai:
@@ -93,7 +97,7 @@ ai2qa:
     temperature: ${AI_TEMPERATURE:0.2}
     model: ${VERTEX_AI_MODEL:gemini-3-flash-preview}
 
-  # Browser automation ENABLED for hackathon
+  # Browser automation ENABLED
   browser:
     enabled: true
     engine: ${BROWSER_ENGINE:playwright}
@@ -118,7 +122,7 @@ ai2qa:
   cache:
     encryption-key: ${CACHE_ENCRYPTION_KEY:aGFja2F0aG9uLWRlbW8ta2V5LTMyLWJ5dGVzISEhIQ==}
 
-  # Email notifications disabled for hackathon
+  # Email notifications disabled
   email:
     enabled: false
 
@@ -175,7 +179,7 @@ recaptcha:
   enabled: ${RECAPTCHA_ENABLED:false}
   secret-key: ${RECAPTCHA_SECRET_KEY:}
 
-# GCP Storage - Local filesystem fallback for hackathon
+# GCP Storage - Local filesystem fallback
 gcp:
   storage:
     bucket-name: ${GCP_STORAGE_BUCKET:}

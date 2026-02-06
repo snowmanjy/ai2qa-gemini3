@@ -1,9 +1,9 @@
 package com.ai2qa.domain.context;
 
 /**
- * Admin context for hackathon demo.
+ * Admin context.
  *
- * <p>Simplified for hackathon - no admin functionality needed.
+ * <p>Simplified - no admin functionality needed.
  * Always returns false for isAdmin().
  */
 public final class AdminContext {
@@ -13,15 +13,15 @@ public final class AdminContext {
     }
 
     public static void setAdmin(boolean admin) {
-        // No-op for hackathon
+        // No-op
     }
 
     public static boolean isAdmin() {
-        // No admin for hackathon demo
+        // No admin mode
         return false;
     }
 
     public static void clear() {
-        // No-op for hackathon
+        // No-op
     }
 }

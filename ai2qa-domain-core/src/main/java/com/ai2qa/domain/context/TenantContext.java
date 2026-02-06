@@ -1,10 +1,9 @@
 package com.ai2qa.domain.context;
 
 /**
- * Tenant context for the hackathon demo.
+ * Tenant context for single-tenant deployment.
  *
- * <p>Simplified for single-tenant hackathon deployment.
- * Always returns the demo tenant ID.
+ * <p>Simplified for single-tenant deployment.
  */
 public final class TenantContext {
 
@@ -15,15 +14,15 @@ public final class TenantContext {
     }
 
     public static void setTenantId(String tenantId) {
-        // No-op for hackathon - single tenant
+        // No-op - single tenant
     }
 
     public static String getTenantId() {
-        // Always return the demo tenant
+        // Always return the default tenant
         return HACKATHON_DEMO_TENANT;
     }
 
     public static void clear() {
-        // No-op for hackathon - single tenant
+        // No-op - single tenant
     }
 }

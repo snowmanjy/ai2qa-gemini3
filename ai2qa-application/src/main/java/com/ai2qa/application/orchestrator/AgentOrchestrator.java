@@ -188,7 +188,7 @@ public class AgentOrchestrator {
 
     /**
      * Gets the browser driver for execution.
-     * Hackathon: Always uses cloud browser (local agent removed).
+     * Always uses cloud browser (local agent removed).
      */
     private BrowserDriverPort getBrowserDriver() {
         return browserDriver;
@@ -216,7 +216,7 @@ public class AgentOrchestrator {
             return;
         }
 
-        // Hackathon: Always use cloud browser (local agent removed)
+        // Always use cloud browser (local agent removed)
         log.info("============================================================");
         log.info("[EXECUTION MODE] CLOUD - using cloud Playwright browser");
         log.info("============================================================");
@@ -552,9 +552,11 @@ public class AgentOrchestrator {
             case ReflectionResult.Retry r -> {
                 log.info("Retrying step: {}", r.reason());
                 selectorResolution.recordOutcome(testRun.getTenantId(), smartDriver, false);
-                // Simplified for hackathon: just re-add step to end of queue (simple retry)
-                // Note: Repair step injection removed for IP protection
-                actionQueue.push(testRun.getId(), step);
+                if (r.repairSteps() != null && !r.repairSteps().isEmpty()) {
+                    actionQueue.pushFrontAll(testRun.getId(), r.repairSteps());
+                } else {
+                    actionQueue.push(testRun.getId(), step); // Simple retry
+                }
                 retryCounts.put(step.stepId(), retryCount + 1);
             }
             case ReflectionResult.Wait w -> {

@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 /**
  * Simple in-memory implementation of QueueStatsPort.
  *
- * <p>This is a simplified version for the hackathon demo.
+ * <p>This is a simplified in-memory version.
  * Returns -1 (unavailable) since we don't track global stats in-memory.
  */
 @Component
@@ -22,14 +22,13 @@ public class InMemoryQueueStats implements QueueStatsPort {
 
     @Override
     public int countActionQueues() {
-        // For simplicity, return -1 (unavailable) in hackathon version
-        // The in-memory implementation doesn't expose queue count easily
+        // Return -1 (unavailable) - the in-memory implementation doesn't expose queue count easily
         return -1;
     }
 
     @Override
     public int countDoneQueues() {
-        // For simplicity, return -1 (unavailable) in hackathon version
+        // Return -1 (unavailable)
         return -1;
     }
 }

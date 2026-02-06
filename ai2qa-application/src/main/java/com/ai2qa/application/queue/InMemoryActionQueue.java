@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Simple in-memory implementation of ActionQueuePort.
  *
- * <p>This is a simplified version for the hackathon demo.
+ * <p>This is a simplified in-memory version.
  * Uses ConcurrentHashMap with LinkedList for thread-safe queue operations.
  *
  * <p>Note: pushFront/pushFrontAll are implemented but the orchestrator

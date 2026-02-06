@@ -18,10 +18,10 @@ import java.util.Optional;
  * Local filesystem implementation of ArtifactStorage.
  * Stores screenshots and reports in /tmp/ai2qa/artifacts directory.
  *
- * Perfect for hackathon demos:
+ * Suitable for local development:
  * - Zero config (no GCS bucket, service account, or IAM)
  * - Works on Cloud Run (uses ephemeral disk)
- * - Artifacts survive the session (container stays warm while judge is using it)
+ * - Artifacts survive the session (container stays warm)
  */
 @Service
 @Primary  // Override GcpArtifactStorage as the default implementation

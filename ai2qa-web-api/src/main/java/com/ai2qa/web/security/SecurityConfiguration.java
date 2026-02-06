@@ -16,7 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Security configuration for hackathon demo.
+ * Security configuration.
  * All endpoints are public (no authentication required).
  */
 @Configuration
@@ -32,7 +32,7 @@ public class SecurityConfiguration {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                // Hackathon: All endpoints are public (no authentication)
+                // All endpoints are public (no authentication required)
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
 
         return http.build();
