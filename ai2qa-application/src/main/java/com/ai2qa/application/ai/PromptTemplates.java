@@ -742,8 +742,11 @@ public final class PromptTemplates {
         """;
 
     /**
-     * Template for generating final report summary.
+     * Template for generating final report summary (legacy - counts only).
+     *
+     * @deprecated Use {@link #reportSummaryPrompt(boolean, List, List, String, int, List, int, List, int, List)} instead
      */
+    @Deprecated
     public static String reportSummaryPrompt(
             boolean isSuccess,
             List<String> goals,
@@ -752,6 +755,31 @@ public final class PromptTemplates {
             int networkErrorCount,
             int consoleErrorCount,
             int accessibilityWarningCount) {
+        return reportSummaryPrompt(
+                isSuccess, goals, stepSummaries, failureReason,
+                networkErrorCount, List.of(),
+                consoleErrorCount, List.of(),
+                accessibilityWarningCount, List.of()
+        );
+    }
+
+    /**
+     * Template for generating final report summary with actual error details.
+     *
+     * <p>Provides the AI with actual error messages (not just counts) so it can
+     * generate specific, actionable health check summaries instead of generic ones.
+     */
+    public static String reportSummaryPrompt(
+            boolean isSuccess,
+            List<String> goals,
+            List<String> stepSummaries,
+            String failureReason,
+            int networkErrorCount,
+            List<String> networkErrorDetails,
+            int consoleErrorCount,
+            List<String> consoleErrorDetails,
+            int accessibilityWarningCount,
+            List<String> accessibilityWarningDetails) {
 
         String schema = isSuccess ? REPORTER_SUCCESS_SCHEMA : REPORTER_FAILURE_SCHEMA;
         String statusLabel = isSuccess ? "SUCCESS" : "FAILURE";
@@ -760,6 +788,24 @@ public final class PromptTemplates {
         String failureContext = failureReason != null
                 ? "\nFailure Reason: " + failureReason
                 : "";
+
+        StringBuilder diagnostics = new StringBuilder();
+        diagnostics.append("DIAGNOSTICS DATA (Use to populate healthCheck - these are observations, NOT failures):\n");
+
+        diagnostics.append(String.format("- Network Errors Detected: %d\n", networkErrorCount));
+        if (!networkErrorDetails.isEmpty()) {
+            diagnostics.append("  Details: ").append(networkErrorDetails).append("\n");
+        }
+
+        diagnostics.append(String.format("- Console Exceptions: %d (Note: console errors don't mean test failed)\n", consoleErrorCount));
+        if (!consoleErrorDetails.isEmpty()) {
+            diagnostics.append("  Details: ").append(consoleErrorDetails).append("\n");
+        }
+
+        diagnostics.append(String.format("- Accessibility Warnings: %d\n", accessibilityWarningCount));
+        if (!accessibilityWarningDetails.isEmpty()) {
+            diagnostics.append("  Details: ").append(accessibilityWarningDetails).append("\n");
+        }
 
         return String.format("""
             Generate a structured report summary for this test run.
@@ -772,19 +818,18 @@ public final class PromptTemplates {
             %s
             %s
 
-            DIAGNOSTICS DATA (Use to populate healthCheck - these are observations, NOT failures):
-            - Network Errors Detected: %d
-            - Console Exceptions: %d (Note: console errors don't mean test failed)
-            - Accessibility Warnings: %d
+            %s
 
             IMPORTANT:
+            - Use the actual error messages above to write SPECIFIC healthCheck summaries
+            - For example, instead of "3 console errors detected", write "TypeError in render, 2 hydration warnings"
             - If status is SUCCESS, outcomeShort MUST be positive (e.g., "All test steps completed successfully")
             - Console/network issues are health metrics, NOT test failures
             - Report health issues in the healthCheck object only
 
             OUTPUT ONLY the JSON matching this schema:
             %s
-            """, statusLabel, goalsText, stepsText, failureContext, networkErrorCount, consoleErrorCount, accessibilityWarningCount, schema);
+            """, statusLabel, goalsText, stepsText, failureContext, diagnostics, schema);
     }
 }
 

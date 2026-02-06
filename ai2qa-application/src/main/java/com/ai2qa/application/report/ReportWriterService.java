@@ -72,9 +72,14 @@ public class ReportWriterService {
             boolean isSuccess = testRun.getStatus() == TestRunStatus.COMPLETED;
             List<String> stepSummaries = extractStepSummaries(testRun.getExecutedSteps());
 
-            int networkErrorCount = countNetworkErrors(testRun.getExecutedSteps());
-            int consoleErrorCount = countConsoleErrors(testRun.getExecutedSteps());
-            int accessibilityWarningCount = countAccessibilityWarnings(testRun.getExecutedSteps());
+            List<ExecutedStep> executedSteps = testRun.getExecutedSteps();
+            int networkErrorCount = countNetworkErrors(executedSteps);
+            int consoleErrorCount = countConsoleErrors(executedSteps);
+            int accessibilityWarningCount = countAccessibilityWarnings(executedSteps);
+
+            List<String> networkErrorDetails = collectNetworkErrors(executedSteps);
+            List<String> consoleErrorDetails = collectConsoleErrors(executedSteps);
+            List<String> accessibilityWarningDetails = collectAccessibilityWarnings(executedSteps);
 
             String prompt = PromptTemplates.reportSummaryPrompt(
                     isSuccess,
@@ -82,8 +87,11 @@ public class ReportWriterService {
                     stepSummaries,
                     testRun.getFailureReason().orElse(null),
                     networkErrorCount,
+                    networkErrorDetails,
                     consoleErrorCount,
-                    accessibilityWarningCount
+                    consoleErrorDetails,
+                    accessibilityWarningCount,
+                    accessibilityWarningDetails
             );
 
             log.info("[SUMMARY] Generating AI summary with {}s timeout, prompt size: {} chars",
@@ -243,6 +251,39 @@ public class ReportWriterService {
                     fallbackHealth
             );
         }
+    }
+
+    /**
+     * Collects distinct network error messages from all steps, capped at 10.
+     */
+    private List<String> collectNetworkErrors(List<ExecutedStep> steps) {
+        return steps.stream()
+                .flatMap(s -> s.networkErrors().stream())
+                .distinct()
+                .limit(10)
+                .toList();
+    }
+
+    /**
+     * Collects distinct console error messages from all steps, capped at 10.
+     */
+    private List<String> collectConsoleErrors(List<ExecutedStep> steps) {
+        return steps.stream()
+                .flatMap(s -> s.consoleErrors().stream())
+                .distinct()
+                .limit(10)
+                .toList();
+    }
+
+    /**
+     * Collects distinct accessibility warning messages from all steps, capped at 10.
+     */
+    private List<String> collectAccessibilityWarnings(List<ExecutedStep> steps) {
+        return steps.stream()
+                .flatMap(s -> s.accessibilityWarnings().stream())
+                .distinct()
+                .limit(10)
+                .toList();
     }
 
     private int countNetworkErrors(List<ExecutedStep> steps) {

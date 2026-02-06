@@ -111,18 +111,51 @@ export function FinalReport({ runId, summary, steps, createdAt }: FinalReportPro
                 </div>
             </div>
 
-            {/* --- HEALTH CHECK SECTION (New) --- */}
-            {summary.healthCheck && (summary.healthCheck.networkIssues.count > 0 || summary.healthCheck.consoleIssues.count > 0) && (
+            {/* --- HEALTH CHECK SECTION --- */}
+            {summary.healthCheck && (
+                summary.healthCheck.networkIssues.count > 0 ||
+                summary.healthCheck.consoleIssues.count > 0 ||
+                (summary.healthCheck.accessibilityScore && summary.healthCheck.accessibilityScore !== "N/A")
+            ) && (
                 <section className="mt-6 rounded-md border-l-4 border-yellow-400 bg-yellow-50 p-4">
-                    <h3 className="text-sm font-bold uppercase text-yellow-800">
-                        ⚠️ Passed with Warnings
+                    <h3 className="text-sm font-bold uppercase text-yellow-800 mb-3">
+                        <AlertTriangle className="inline h-4 w-4 mr-1 -mt-0.5" />
+                        Health Check
                     </h3>
-                    <p className="mt-1 text-sm text-yellow-700">
-                        The test completed successfully, but we detected{" "}
-                        <strong>{summary.healthCheck.networkIssues.count} network errors</strong> and{" "}
-                        <strong>{summary.healthCheck.consoleIssues.count} console exceptions</strong>.
-                        This may indicate hidden bugs.
-                    </p>
+
+                    <div className="space-y-2">
+                        {/* Network Issues */}
+                        {summary.healthCheck.networkIssues.count > 0 && (
+                            <div className="text-sm text-yellow-800">
+                                <strong>Network Issues ({summary.healthCheck.networkIssues.count}):</strong>{" "}
+                                <span className="text-yellow-700">{summary.healthCheck.networkIssues.summary}</span>
+                            </div>
+                        )}
+
+                        {/* Console Issues */}
+                        {summary.healthCheck.consoleIssues.count > 0 && (
+                            <div className="text-sm text-yellow-800">
+                                <strong>Console Issues ({summary.healthCheck.consoleIssues.count}):</strong>{" "}
+                                <span className="text-yellow-700">{summary.healthCheck.consoleIssues.summary}</span>
+                            </div>
+                        )}
+
+                        {/* Accessibility */}
+                        {summary.healthCheck.accessibilityScore && summary.healthCheck.accessibilityScore !== "N/A" && (
+                            <div className="text-sm text-yellow-800">
+                                <strong>Accessibility: {summary.healthCheck.accessibilityScore}</strong>
+                                {summary.healthCheck.accessibilitySummary && (
+                                    <span className="text-yellow-700"> — {summary.healthCheck.accessibilitySummary}</span>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    {(summary.healthCheck.networkIssues.count > 0 || summary.healthCheck.consoleIssues.count > 0) && (
+                        <p className="mt-2 text-xs text-yellow-600">
+                            These are health observations, not test failures. Review for potential hidden bugs.
+                        </p>
+                    )}
                 </section>
             )}
 
