@@ -35,7 +35,7 @@ public class AiProviderConfiguration {
     @Value("${GOOGLE_CLOUD_PROJECT:}")
     private String gcpProject;
 
-    @Value("${spring.ai.vertex.ai.gemini.location:us-central1}")
+    @Value("${spring.ai.vertex.ai.gemini.location:global}")
     private String gcpLocation;
 
     /**
@@ -46,7 +46,15 @@ public class AiProviderConfiguration {
     public ChatModel geminiChatModel() {
         log.info("Creating Vertex AI Gemini ChatModel with project: {}, location: {}, model: {}",
                 gcpProject, gcpLocation, model);
-        VertexAI vertexAI = new VertexAI(gcpProject, gcpLocation);
+        // Global location requires the base endpoint (no region prefix)
+        // Regional locations use {region}-aiplatform.googleapis.com
+        VertexAI vertexAI = "global".equalsIgnoreCase(gcpLocation)
+                ? new VertexAI.Builder()
+                    .setProjectId(gcpProject)
+                    .setLocation("global")
+                    .setApiEndpoint("aiplatform.googleapis.com")
+                    .build()
+                : new VertexAI(gcpProject, gcpLocation);
         VertexAiGeminiChatOptions options = VertexAiGeminiChatOptions.builder()
                 .withModel(model)
                 .withTemperature(temperature)
