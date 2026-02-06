@@ -87,8 +87,9 @@ public class GeminiClient implements StepPlanner.GeminiPlannerClient {
                     (int) response.latencyMs(), true, null);
 
             String rawResponse = response.content();
-            log.info("AI response received ({} chars) for goal: '{}'",
-                    rawResponse != null ? rawResponse.length() : 0, goal);
+            log.info("AI response received ({} chars) for goal: '{}'. Preview: {}",
+                    rawResponse != null ? rawResponse.length() : 0, goal,
+                    truncate(rawResponse, 500));
 
             List<ActionStep> steps = parseStepsResponse(rawResponse);
 
@@ -479,6 +480,10 @@ public class GeminiClient implements StepPlanner.GeminiPlannerClient {
 
     /**
      * Extracts JSON from potentially markdown-wrapped response.
+     *
+     * <p>Gemini may include explanatory text before/after the JSON array
+     * (unlike Claude which follows format instructions more strictly).
+     * This method strips markdown fences and locates the JSON array boundaries.
      */
     private String extractJson(String response) {
         // Remove markdown code block wrappers if present
@@ -492,6 +497,18 @@ public class GeminiClient implements StepPlanner.GeminiPlannerClient {
 
         if (json.endsWith("```")) {
             json = json.substring(0, json.length() - 3);
+        }
+
+        json = json.trim();
+
+        // Find actual JSON array boundaries if text surrounds it
+        // e.g. "Here are the steps:\n[{...}]\nLet me know if..."
+        int arrayStart = json.indexOf('[');
+        int arrayEnd = json.lastIndexOf(']');
+        if (arrayStart >= 0 && arrayEnd > arrayStart && arrayStart > 0) {
+            log.debug("Extracting JSON array from position {} to {} (text before: {} chars)",
+                    arrayStart, arrayEnd, arrayStart);
+            json = json.substring(arrayStart, arrayEnd + 1);
         }
 
         return json.trim();
