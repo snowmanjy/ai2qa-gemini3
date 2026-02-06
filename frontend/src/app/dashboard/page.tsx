@@ -60,6 +60,14 @@ function getPersonaLabel(persona?: Persona) {
     return persona.charAt(0) + persona.slice(1).toLowerCase()
 }
 
+// Default goals per persona - ensures AI always has context for step generation
+const PERSONA_DEFAULT_GOALS: Record<Persona, string> = {
+    STANDARD: "Thoroughly explore the page by scrolling, clicking tabs, expanding sections, and opening menus to discover all content. Document each state with screenshots and verify elements load correctly.",
+    CHAOS: "Thoroughly explore the page by scrolling, clicking tabs, and expanding sections. Then randomly interact with every discovered element — test edge cases, rapid clicks, unusual inputs — and observe for UI errors or crashes.",
+    HACKER: "Thoroughly explore the page by scrolling, clicking tabs, and expanding sections to discover all input fields. For each input found (search bars, text fields, forms), probe for XSS and injection vulnerabilities using safe test payloads. Skip any expected inputs that don't exist on the page.",
+    PERFORMANCE_HAWK: "Analyze page load performance by measuring time to interactive, Core Web Vitals (LCP, CLS, INP), and resource loading. Identify large images, render-blocking resources, and excessive API calls. Report any page loads over 3 seconds or UI interactions that feel sluggish."
+}
+
 export default function DashboardPage() {
     const router = useRouter()
     const { executeRecaptcha } = useGoogleReCaptcha()
@@ -131,7 +139,7 @@ export default function DashboardPage() {
 
             const payload: CreateTestRunRequest = {
                 targetUrl: url,
-                goals: [], // No longer using goals array
+                goals: [PERSONA_DEFAULT_GOALS[persona]],
                 persona,
                 recaptchaToken,
                 additionalContext: additionalContext.trim() || undefined,

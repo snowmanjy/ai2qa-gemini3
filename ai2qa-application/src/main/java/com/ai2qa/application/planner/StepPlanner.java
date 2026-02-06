@@ -79,7 +79,14 @@ public class StepPlanner {
      */
     public List<ActionStep> createPlan(String targetUrl, List<String> goals, TestPersona persona) {
         TestPersona effectivePersona = persona != null ? persona : TestPersona.STANDARD;
-        log.info("Creating plan for {} with {} goals using {} persona", targetUrl, goals.size(), effectivePersona);
+
+        // When no goals are provided, generate a default exploratory goal based on persona
+        List<String> effectiveGoals = (goals == null || goals.isEmpty())
+                ? List.of(buildDefaultGoal(targetUrl, effectivePersona))
+                : goals;
+
+        log.info("Creating plan for {} with {} goals using {} persona (original goals: {})",
+                targetUrl, effectiveGoals.size(), effectivePersona, goals != null ? goals.size() : 0);
 
         String memoryContext = buildMemoryContext();
         List<ActionStep> plan = new ArrayList<>();
@@ -88,7 +95,7 @@ public class StepPlanner {
         plan.add(ActionStepFactory.navigate(targetUrl));
 
         // Use AI to generate steps for each goal with persona and memory context
-        for (String goal : goals) {
+        for (String goal : effectiveGoals) {
             List<ActionStep> goalSteps = geminiClient.planGoal(goal, targetUrl, effectivePersona, memoryContext);
             plan.addAll(goalSteps);
         }
@@ -172,6 +179,39 @@ public class StepPlanner {
         return geminiClient.planRepair(failedStep, error, snapshot, effectivePersona, memoryContext);
     }
 
+    /**
+     * Builds a default exploratory goal when no explicit goals are provided.
+     *
+     * <p>Each persona gets a goal tailored to its specialty, ensuring the AI
+     * generates meaningful test steps even when the user only provides a URL.
+     */
+    private String buildDefaultGoal(String targetUrl, TestPersona persona) {
+        String goal = switch (persona) {
+            case PERFORMANCE_HAWK -> "Thoroughly explore the website and measure performance metrics. " +
+                    "Navigate through main pages, interact with key UI elements, and capture Core Web Vitals " +
+                    "after each navigation and interaction.";
+            case CHAOS -> "Explore the website chaotically - try unusual inputs, rapid interactions, " +
+                    "edge cases, and unexpected user flows to find stability issues.";
+            case HACKER -> "Perform a security assessment of the website - check for common vulnerabilities " +
+                    "like XSS, injection points, exposed sensitive data, and missing security headers.";
+            case STANDARD -> "Thoroughly explore and test the website - navigate through all main sections, " +
+                    "interact with forms and buttons, verify links work, and check overall functionality.";
+        };
+        log.info("No goals provided - using default {} goal for {}", persona, targetUrl);
+        return goal;
+    }
+
+    /**
+     * Builds a default exploratory goal for PersonaDefinition when no explicit goals are provided.
+     */
+    private String buildDefaultGoalForPersonaDefinition(String targetUrl, PersonaDefinition persona) {
+        String goal = "Thoroughly explore and test the website at " + targetUrl +
+                " - navigate through all main sections, interact with key UI elements, " +
+                "and perform testing according to your persona specialty.";
+        log.info("No goals provided - using default goal for PersonaDefinition {} at {}", persona.name(), targetUrl);
+        return goal;
+    }
+
     // ========== PersonaDefinition overloads ==========
 
     /**
@@ -186,13 +226,20 @@ public class StepPlanner {
         if (persona == null) {
             return createPlan(targetUrl, goals, TestPersona.STANDARD);
         }
-        log.info("Creating plan for {} with {} goals using {} persona (PersonaDefinition)", targetUrl, goals.size(), persona.name());
+
+        // When no goals are provided, generate a default exploratory goal based on persona name
+        List<String> effectiveGoals = (goals == null || goals.isEmpty())
+                ? List.of(buildDefaultGoalForPersonaDefinition(targetUrl, persona))
+                : goals;
+
+        log.info("Creating plan for {} with {} goals using {} persona (PersonaDefinition, original goals: {})",
+                targetUrl, effectiveGoals.size(), persona.name(), goals != null ? goals.size() : 0);
 
         String memoryContext = buildMemoryContext();
         List<ActionStep> plan = new ArrayList<>();
         plan.add(ActionStepFactory.navigate(targetUrl));
 
-        for (String goal : goals) {
+        for (String goal : effectiveGoals) {
             List<ActionStep> goalSteps = geminiClient.planGoal(goal, targetUrl, persona, memoryContext);
             plan.addAll(goalSteps);
         }
