@@ -245,7 +245,7 @@ export default function DashboardPage() {
                                 aria-required="true"
                                 className="flex-1"
                             />
-                            <Select value={url} onValueChange={setUrl}>
+                            <Select onValueChange={setUrl}>
                                 <SelectTrigger className="w-[200px]">
                                     <SelectValue placeholder="Quick pick" />
                                 </SelectTrigger>
