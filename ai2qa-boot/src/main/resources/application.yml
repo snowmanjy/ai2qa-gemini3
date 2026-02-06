@@ -51,7 +51,7 @@ spring:
       ai:
         gemini:
           project-id: ${GOOGLE_CLOUD_PROJECT:your-project-id}
-          location: us-central1
+          location: ${VERTEX_AI_LOCATION:global}
           chat:
             options:
               model: ${AI_MODEL:gemini-3-flash-preview}
