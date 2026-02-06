@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.metadata.Usage;
-import org.springframework.ai.chat.prompt.ChatOptionsBuilder;
+import org.springframework.ai.vertexai.gemini.VertexAiGeminiChatOptions;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -313,9 +313,15 @@ class SpringChatClientPort implements ChatClientPort {
         }
 
         // Apply temperature override if provided
+        // CRITICAL: Must use VertexAiGeminiChatOptions (not generic ChatOptionsBuilder) to preserve
+        // maxOutputTokens. Generic ChatOptions merges null maxTokens which overrides the model-level
+        // VertexAI maxOutputTokens=8192, causing Gemini to use its default (~1024) and truncate responses.
         if (temperature != null) {
-            log.debug("Applying temperature override: {}", temperature);
-            request = request.options(ChatOptionsBuilder.builder().withTemperature(temperature).build());
+            log.debug("Applying temperature override: {} with maxOutputTokens=8192", temperature);
+            request = request.options(VertexAiGeminiChatOptions.builder()
+                    .withTemperature(temperature)
+                    .withMaxOutputTokens(8192)
+                    .build());
         }
 
         // CRITICAL: Wrap the blocking AI call with timeout protection
@@ -567,7 +573,10 @@ class SpringChatClientPort implements ChatClientPort {
         }
 
         if (temperature != null) {
-            request = request.options(ChatOptionsBuilder.builder().withTemperature(temperature).build());
+            request = request.options(VertexAiGeminiChatOptions.builder()
+                    .withTemperature(temperature)
+                    .withMaxOutputTokens(8192)
+                    .build());
         }
 
         final ChatClient.ChatClientRequestSpec finalRequest = request;

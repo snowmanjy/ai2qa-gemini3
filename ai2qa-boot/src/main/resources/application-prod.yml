@@ -13,7 +13,7 @@ spring:
     hikari:
       # Scaled for 100 concurrent users (was 10, now 30)
       maximum-pool-size: 30
-      minimum-idle: 5
+      minimum-idle: 2
       connection-timeout: 10000   # Fail faster (was 30s)
       idle-timeout: 600000
       max-lifetime: 1800000
