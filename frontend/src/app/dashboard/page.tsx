@@ -340,8 +340,8 @@ export default function DashboardPage() {
                                 <TableHead scope="col">Status</TableHead>
                                 <TableHead scope="col">Target URL</TableHead>
                                 <TableHead scope="col">Persona</TableHead>
-                                <TableHead scope="col">Created</TableHead>
                                 <TableHead scope="col" className="w-20 text-center">Report</TableHead>
+                                <TableHead scope="col">Created</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -387,9 +387,6 @@ export default function DashboardPage() {
                                                 {getPersonaLabel(run.persona)}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell className="text-muted-foreground">
-                                            {format(new Date(run.createdAt), "PP p")}
-                                        </TableCell>
                                         <TableCell className="text-center">
                                             {(run.status === 'COMPLETED' || run.status === 'FAILED') ? (
                                                 <Link href={`/dashboard/runs/${run.id}`} aria-label={`View report for ${run.targetUrl}`}>
@@ -398,6 +395,9 @@ export default function DashboardPage() {
                                             ) : (
                                                 <span className="text-muted-foreground text-xs">—</span>
                                             )}
+                                        </TableCell>
+                                        <TableCell className="text-muted-foreground">
+                                            {format(new Date(run.createdAt), "PP p")}
                                         </TableCell>
                                     </TableRow>
                                 ))
