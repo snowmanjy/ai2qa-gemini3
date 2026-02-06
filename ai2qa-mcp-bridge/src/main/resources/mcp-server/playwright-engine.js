@@ -1243,14 +1243,16 @@ export async function waitFor(options = {}) {
 export async function evaluate(script, args = []) {
     const p = await ensurePage();
 
-    // Playwright evaluate syntax
-    // Wrap script in 'return (...)' to ensure expression results are returned
-    // This handles both IIFE scripts and regular expressions
-    const wrappedScript = 'return (' + script + ')';
-    const result = await p.evaluate(
-        new Function('args', wrappedScript),
-        args
-    );
+    // Try expression-style first (handles IIFEs and simple expressions),
+    // fall back to statement-style for scripts with const/let/var declarations.
+    let fn;
+    try {
+        fn = new Function('args', 'return (' + script + ')');
+    } catch {
+        // Script contains statements (const, let, var, etc.) - wrap as function body
+        fn = new Function('args', script);
+    }
+    const result = await p.evaluate(fn, args);
 
     return { result };
 }
