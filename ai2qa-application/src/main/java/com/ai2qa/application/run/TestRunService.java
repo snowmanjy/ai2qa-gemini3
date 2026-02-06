@@ -80,6 +80,17 @@ public class TestRunService {
                 .map(this::toView);
     }
 
+    public boolean deleteTestRun(String id) {
+        TestRunId testRunId = parseTestRunId(id);
+        return testRunRepository.findById(testRunId)
+                .map(run -> {
+                    testRunRepository.deleteById(testRunId);
+                    log.info("Deleted test run: {}", id);
+                    return true;
+                })
+                .orElse(false);
+    }
+
     public Optional<List<ExecutedStepView>> getTestRunLog(String id) {
         return testRunRepository.findById(parseTestRunId(id))
                 .map(TestRun::getExecutedSteps)
@@ -110,7 +121,7 @@ public class TestRunService {
     /**
      * Creates a test run.
      *
-     * <p>Hackathon version: Always uses CLOUD execution mode.
+     * <p>Always uses CLOUD execution mode.
      *
      * @param tenantId          Tenant ID
      * @param targetUrl         URL to test
@@ -119,8 +130,8 @@ public class TestRunService {
      * @param cookiesJson       Optional cookies JSON
      * @param notifyOnComplete  Whether to send email notification
      * @param notificationEmail Optional notification email override
-     * @param executionMode     Ignored in hackathon version (always CLOUD)
-     * @param agentIdStr        Ignored in hackathon version
+     * @param executionMode     Ignored (always CLOUD)
+     * @param agentIdStr        Ignored
      * @return Created test run view
      */
     public TestRunView createTestRun(
@@ -134,7 +145,7 @@ public class TestRunService {
             String executionMode,
             String agentIdStr) {
 
-        // Hackathon: Always use CLOUD mode
+        // Always use CLOUD mode
         ExecutionMode mode = ExecutionMode.CLOUD;
 
         // Validate target URL
@@ -151,7 +162,7 @@ public class TestRunService {
                 notifyOnComplete,
                 notificationEmail,
                 mode,
-                null,  // No local agent in hackathon
+                null,  // No local agent
                 clock.instant());
         testRunRepository.save(testRun);
 

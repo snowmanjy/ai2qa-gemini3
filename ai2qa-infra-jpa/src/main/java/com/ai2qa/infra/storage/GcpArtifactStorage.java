@@ -16,7 +16,7 @@ import java.util.Optional;
  * Google Cloud Storage implementation of ArtifactStorage.
  * Stores screenshots, reports, and other artifacts in GCS buckets.
  *
- * NOTE: This is disabled by default for hackathon. LocalFileArtifactStorage is used instead.
+ * NOTE: Disabled by default. LocalFileArtifactStorage is used instead.
  * To enable GCS storage, set: ai2qa.storage.type=gcs
  */
 @Service

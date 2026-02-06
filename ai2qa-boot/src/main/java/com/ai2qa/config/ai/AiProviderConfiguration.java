@@ -16,10 +16,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 /**
- * Gemini-only AI configuration for hackathon.
+ * Gemini-only AI configuration.
  *
  * <p>Simplified to use only Vertex AI / Gemini for the
- * Google DeepMind Gemini 3 Hackathon.
+ * Vertex AI / Gemini.
  */
 @Configuration
 public class AiProviderConfiguration {
@@ -58,6 +58,7 @@ public class AiProviderConfiguration {
         VertexAiGeminiChatOptions options = VertexAiGeminiChatOptions.builder()
                 .withModel(model)
                 .withTemperature(temperature)
+                .withMaxOutputTokens(8192)
                 .build();
         return new VertexAiGeminiChatModel(vertexAI, options);
     }
@@ -133,7 +134,7 @@ public class AiProviderConfiguration {
         public AiConfigurationLogger(String model, double temperature) {
             LoggerFactory.getLogger(AiConfigurationLogger.class).info(
                     "\n╔══════════════════════════════════════════════════════════╗\n" +
-                            "║          GEMINI 3 HACKATHON AI CONFIGURATION             ║\n" +
+                            "║             GEMINI AI CONFIGURATION                      ║\n" +
                             "╠══════════════════════════════════════════════════════════╣\n" +
                             "║  Provider:    Vertex AI / Gemini\n" +
                             "║  Model:       {}\n" +

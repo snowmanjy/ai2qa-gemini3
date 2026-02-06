@@ -18,7 +18,7 @@ spring:
       idle-timeout: 600000
       max-lifetime: 1800000
 
-  # JPA Production Settings - Hackathon: create tables automatically
+  # JPA Production Settings - auto-create tables
   jpa:
     hibernate:
       ddl-auto: update
@@ -29,11 +29,11 @@ spring:
     show-sql: false
     open-in-view: false
 
-  # Flyway disabled for hackathon (using ddl-auto: update)
+  # Flyway disabled (using ddl-auto: update)
   flyway:
     enabled: false
 
-  # Redis removed for hackathon - using in-memory queues
+  # Redis removed - using in-memory queues
 
   # Spring AI - Vertex AI (uses ADC in Cloud Run)
   ai:
@@ -46,6 +46,7 @@ spring:
             options:
               model: ${VERTEX_AI_MODEL:gemini-3-flash-preview}
               temperature: ${AI_TEMPERATURE:0.2}
+              max-output-tokens: ${AI_MAX_OUTPUT_TOKENS:8192}
 
 # Resilience4j Circuit Breaker Configuration (Production)
 # More conservative settings for production stability
@@ -106,8 +107,8 @@ logging:
   pattern:
     console: '{"timestamp":"%d{ISO8601}","level":"%level","logger":"%logger","message":"%msg"}%n'
 
-# Stripe removed for hackathon - no payments
-# Clerk removed for hackathon - no authentication
+# Stripe disabled - no payments
+# Clerk disabled - no authentication
 
 # Email Configuration (Gmail SMTP)
 spring.mail:
@@ -133,9 +134,12 @@ gcp:
 
 # Ai2QA Production Settings
 ai2qa:
-  # Daily global cap on test runs (Hackathon - prevent abuse)
+  # Daily global cap on test runs (prevent abuse)
   daily-cap: ${DAILY_CAP:50}
-  # AI Provider - Vertex AI / Gemini only for hackathon
+  # Test run deletion
+  test-run:
+    delete-enabled: ${AI2QA_TEST_RUN_DELETE_ENABLED:true}
+  # AI Provider - Vertex AI / Gemini only
   ai:
     provider: vertex-ai
     temperature: ${AI_TEMPERATURE:0.2}
@@ -166,7 +170,7 @@ ai2qa:
     alert-email: ${AI2QA_ADMIN_ALERT_EMAIL:admin@ai2qa.com}
     alerts-enabled: ${AI2QA_ADMIN_ALERTS_ENABLED:true}
 
-  # Analytics removed for hackathon (no PostHog)
+  # Analytics disabled
 
   # Security settings
   security:

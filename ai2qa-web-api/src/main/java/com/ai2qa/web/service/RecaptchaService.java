@@ -16,7 +16,7 @@ import java.util.Optional;
 
 /**
  * Service to verify Google reCAPTCHA v3 tokens.
- * Used for hackathon demo to prevent bot abuse.
+ * Prevents bot abuse.
  */
 @Service
 public class RecaptchaService {
@@ -92,7 +92,7 @@ public class RecaptchaService {
 
         } catch (Exception e) {
             log.error("reCAPTCHA verification error", e);
-            // Fail open in case of network issues (for hackathon demo)
+            // Fail open in case of network issues
             return true;
         }
     }

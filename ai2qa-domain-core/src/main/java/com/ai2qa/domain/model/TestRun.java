@@ -109,7 +109,7 @@ public class TestRun {
 
     /**
      * Factory method to create a new test run with execution mode.
-     * Hackathon: Local agent support removed - agentId parameter ignored.
+     * Local agent support removed - agentId parameter ignored.
      */
     public static TestRun create(TestRunId id, String tenantId, String targetUrl, List<String> goals,
                                   TestPersona persona, String cookiesJson,
@@ -158,7 +158,7 @@ public class TestRun {
 
     /**
      * Reconstitutes a TestRun from persistence with execution mode.
-     * Hackathon: Local agent support removed.
+     * Local agent support removed.
      */
     public static TestRun reconstitute(
             TestRunId id,

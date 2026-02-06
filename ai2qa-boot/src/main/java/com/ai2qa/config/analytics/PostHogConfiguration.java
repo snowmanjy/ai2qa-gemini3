@@ -9,9 +9,9 @@ import org.springframework.context.annotation.Configuration;
 import java.util.Map;
 
 /**
- * Analytics configuration for hackathon demo.
+ * Analytics configuration for production.
  *
- * <p>PostHog removed for hackathon - provides no-op implementation.
+ * <p>PostHog disabled - provides no-op implementation.
  */
 @Configuration
 class PostHogConfiguration {
@@ -20,7 +20,7 @@ class PostHogConfiguration {
 
     @Bean
     AnalyticsPort analyticsPort() {
-        log.info("Analytics disabled for hackathon demo");
+        log.info("Analytics disabled (no-op mode)");
         return new NoOpAnalyticsPort();
     }
 
@@ -31,12 +31,12 @@ class PostHogConfiguration {
 
         @Override
         public void capture(String distinctId, String event, Map<String, Object> properties) {
-            // No-op for hackathon
+            // No-op
         }
 
         @Override
         public void identify(String distinctId, Map<String, Object> properties) {
-            // No-op for hackathon
+            // No-op
         }
 
         @Override

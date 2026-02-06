@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -33,16 +34,19 @@ public class TestRunController {
     private final ArtifactStorage artifactStorage;
     private final RecaptchaService recaptchaService;
     private final DailyCapService dailyCapService;
+    private final boolean deleteEnabled;
 
     public TestRunController(
             TestRunService testRunService,
             ArtifactStorage artifactStorage,
             RecaptchaService recaptchaService,
-            DailyCapService dailyCapService) {
+            DailyCapService dailyCapService,
+            @Value("${ai2qa.test-run.delete-enabled:false}") boolean deleteEnabled) {
         this.testRunService = testRunService;
         this.artifactStorage = artifactStorage;
         this.recaptchaService = recaptchaService;
         this.dailyCapService = dailyCapService;
+        this.deleteEnabled = deleteEnabled;
     }
 
     /**
@@ -136,6 +140,18 @@ public class TestRunController {
                 .orElseThrow(() -> EntityNotFoundException.testRun(id));
 
         return ResponseEntity.ok(TestRunResponse.from(testRun));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteTestRun(@PathVariable String id) {
+        if (!deleteEnabled) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "delete_disabled", "message", "Test run deletion is disabled."));
+        }
+        if (testRunService.deleteTestRun(id)) {
+            return ResponseEntity.noContent().build();
+        }
+        throw EntityNotFoundException.testRun(id);
     }
 
     @GetMapping("/{id}/log")

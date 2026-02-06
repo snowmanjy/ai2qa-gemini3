@@ -203,7 +203,7 @@ export default function DashboardPage() {
 
     return (
         <div className="p-6 md:p-8 space-y-8">
-            {/* Hackathon Header */}
+            {/* Page Header */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-border">
                 <div>
                     <h1 className="text-2xl md:text-3xl font-bold text-foreground">AI-Powered QA Testing</h1>

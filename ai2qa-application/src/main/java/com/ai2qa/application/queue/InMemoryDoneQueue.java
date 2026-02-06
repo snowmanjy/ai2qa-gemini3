@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Simple in-memory implementation of DoneQueuePort.
  *
- * <p>This is a simplified version for the hackathon demo.
+ * <p>This is a simplified in-memory version.
  * Records executed steps in memory for the test run history.
  */
 @Component

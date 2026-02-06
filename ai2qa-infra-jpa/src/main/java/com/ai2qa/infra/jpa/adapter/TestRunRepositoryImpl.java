@@ -240,7 +240,7 @@ public class TestRunRepositoryImpl implements TestRunRepository {
                 domain.isNotifyOnComplete(),
                 domain.getNotificationEmail().orElse(null),
                 domain.getExecutionMode().name(),
-                null,  // Hackathon: Local agent removed
+                null,  // Local agent removed
                 domain.getCreatedAt());
     }
 
@@ -292,7 +292,7 @@ public class TestRunRepositoryImpl implements TestRunRepository {
                 }
             }
 
-            // Hackathon: Local agent removed, agentId always null
+            // Local agent removed, agentId always null
 
             return TestRun.reconstitute(
                     new TestRunId(entity.getId()),
