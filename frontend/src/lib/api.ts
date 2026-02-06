@@ -1,7 +1,12 @@
 import axios from "axios";
 
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+
+/** Full API v1 base URL (e.g., "https://api.example.com/api/v1") */
+export const API_BASE_URL = `${BASE_URL.replace(/\/+$/, '')}/api/v1`;
+
 export const api = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1",
+    baseURL: API_BASE_URL,
 });
 
 api.interceptors.response.use(
