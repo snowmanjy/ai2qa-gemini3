@@ -299,6 +299,7 @@ function PerformanceSection({ steps }: { steps: ExecutedStep[] }) {
 
     const criticalCount = uniqueIssues.filter((i) => i.severity === "CRITICAL").length;
     const highCount = uniqueIssues.filter((i) => i.severity === "HIGH").length;
+    const mediumCount = uniqueIssues.filter((i) => i.severity === "MEDIUM").length;
 
     return (
         <section>
@@ -406,7 +407,12 @@ function PerformanceSection({ steps }: { steps: ExecutedStep[] }) {
                         )}
                         {highCount > 0 && (
                             <span>
-                                {highCount} high-priority issue{highCount > 1 ? "s" : ""} to address.
+                                {highCount} high-priority issue{highCount > 1 ? "s" : ""} to address.{" "}
+                            </span>
+                        )}
+                        {mediumCount > 0 && (
+                            <span>
+                                {mediumCount} medium issue{mediumCount > 1 ? "s" : ""} noted.
                             </span>
                         )}
                     </p>
