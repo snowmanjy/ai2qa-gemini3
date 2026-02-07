@@ -3,7 +3,7 @@ package com.ai2qa.infra.storage;
 import com.ai2qa.application.port.ArtifactStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Primary;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
@@ -20,11 +20,12 @@ import java.util.Optional;
  *
  * Suitable for local development:
  * - Zero config (no GCS bucket, service account, or IAM)
- * - Works on Cloud Run (uses ephemeral disk)
- * - Artifacts survive the session (container stays warm)
+ * - Artifacts live only as long as the process or container
+ *
+ * For production on Cloud Run, use GcpArtifactStorage (ai2qa.storage.type=gcs).
  */
 @Service
-@Primary  // Override GcpArtifactStorage as the default implementation
+@ConditionalOnProperty(name = "ai2qa.storage.type", havingValue = "local", matchIfMissing = true)
 public class LocalFileArtifactStorage implements ArtifactStorage {
 
     private static final Logger log = LoggerFactory.getLogger(LocalFileArtifactStorage.class);

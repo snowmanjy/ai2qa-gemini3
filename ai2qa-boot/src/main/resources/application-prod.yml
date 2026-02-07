@@ -134,6 +134,8 @@ gcp:
 
 # Ai2QA Production Settings
 ai2qa:
+  storage:
+    type: gcs
   # Daily global cap on test runs (prevent abuse)
   daily-cap: ${DAILY_CAP:50}
   # Test run deletion

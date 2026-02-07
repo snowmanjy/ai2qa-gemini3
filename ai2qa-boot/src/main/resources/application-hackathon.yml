@@ -85,6 +85,9 @@ logging:
 
 # Ai2QA Settings
 ai2qa:
+  # Use GCS for artifact storage (screenshots, reports) - critical for Cloud Run
+  storage:
+    type: gcs
   # Daily global cap on test runs (prevent abuse)
   daily-cap: ${DAILY_CAP:50}
   # Test run deletion
@@ -179,7 +182,7 @@ recaptcha:
   enabled: ${RECAPTCHA_ENABLED:false}
   secret-key: ${RECAPTCHA_SECRET_KEY:}
 
-# GCP Storage - Local filesystem fallback
+# GCP Storage
 gcp:
   storage:
-    bucket-name: ${GCP_STORAGE_BUCKET:}
+    bucket-name: ${GCP_STORAGE_BUCKET:ai2qa-hackathon-demo-artifacts}
