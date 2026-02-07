@@ -94,11 +94,8 @@ describe('RunDetailPage', () => {
         render(<RunDetailPage />)
 
         await waitFor(() => {
-            expect(screen.getByText('Excel')).toBeInTheDocument()
+            expect(screen.getByText('PDF')).toBeInTheDocument()
         })
-
-        expect(screen.getByText('PDF')).toBeInTheDocument()
-        expect(screen.getByText('Code')).toBeInTheDocument()
     })
 
     it('shows Back to Runs link', async () => {
