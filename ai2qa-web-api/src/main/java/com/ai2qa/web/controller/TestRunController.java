@@ -14,7 +14,9 @@ import com.ai2qa.web.service.RecaptchaService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
@@ -170,7 +172,21 @@ public class TestRunController {
             @PathVariable int stepIndex) {
         return artifactStorage.loadScreenshot(id, stepIndex)
                 .map(bytes -> ResponseEntity.ok()
-                        .contentType(org.springframework.http.MediaType.IMAGE_PNG)
+                        .contentType(MediaType.IMAGE_PNG)
+                        .body(bytes))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Download the generated PDF report for a test run.
+     */
+    @GetMapping("/{id}/export/pdf")
+    public ResponseEntity<byte[]> exportPdf(@PathVariable String id) {
+        return artifactStorage.loadReport(id, "report.pdf")
+                .map(bytes -> ResponseEntity.ok()
+                        .contentType(MediaType.APPLICATION_PDF)
+                        .header(HttpHeaders.CONTENT_DISPOSITION,
+                                "attachment; filename=\"test-run-" + id + ".pdf\"")
                         .body(bytes))
                 .orElse(ResponseEntity.notFound().build());
     }

@@ -6,15 +6,9 @@ import { TestRun } from "@/types"
 import { useParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, ArrowLeft, Check, X, Sparkles, Clock, Image as ImageIcon, FileSpreadsheet, FileText, Code, ChevronDown, Lightbulb, Radio, Gauge } from "lucide-react"
+import { Loader2, ArrowLeft, Check, X, Sparkles, Clock, Image as ImageIcon, FileText, Lightbulb, Radio, Gauge } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { format } from "date-fns"
 import { toast } from "sonner"
 import { FinalReport } from "@/components/report/final-report"
@@ -240,19 +234,6 @@ export default function RunDetailPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                            trackExport('excel');
-                            const baseUrl = API_BASE_URL;
-                            downloadWithAuth(`${baseUrl}/test-runs/${id}/export/excel`, `test-run-${id}.xlsx`);
-                        }}
-                        title="Download Excel report"
-                    >
-                        <FileSpreadsheet className="h-4 w-4 mr-2" />
-                        Excel
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
                             trackExport('pdf');
                             const baseUrl = API_BASE_URL;
                             downloadWithAuth(`${baseUrl}/test-runs/${id}/export/pdf`, `test-run-${id}.pdf`);
@@ -262,37 +243,6 @@ export default function RunDetailPage() {
                         <FileText className="h-4 w-4 mr-2" />
                         PDF
                     </Button>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" title="Export as Playwright code">
-                                <Code className="h-4 w-4 mr-2" />
-                                Code
-                                <ChevronDown className="h-3 w-3 ml-1" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                                onClick={() => {
-                                    trackExport('code', 'java');
-                                    const baseUrl = API_BASE_URL;
-                                    downloadWithAuth(`${baseUrl}/test-runs/${id}/export/code?lang=JAVA`, `test-run-${id}.java`);
-                                }}
-                            >
-                                <Code className="h-4 w-4 mr-2" />
-                                Playwright (Java)
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() => {
-                                    trackExport('code', 'typescript');
-                                    const baseUrl = API_BASE_URL;
-                                    downloadWithAuth(`${baseUrl}/test-runs/${id}/export/code?lang=TYPESCRIPT`, `test-run-${id}.ts`);
-                                }}
-                            >
-                                <Code className="h-4 w-4 mr-2" />
-                                Playwright (TypeScript)
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
                 </div>
                 <p className="text-xs text-muted-foreground ml-2 mt-1">No lock-in. Own your tests.</p>
             </div>
