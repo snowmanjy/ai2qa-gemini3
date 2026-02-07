@@ -90,14 +90,6 @@ describe('RunDetailPage', () => {
         })
     })
 
-    it('shows export buttons', async () => {
-        render(<RunDetailPage />)
-
-        await waitFor(() => {
-            expect(screen.getByText('PDF')).toBeInTheDocument()
-        })
-    })
-
     it('shows Back to Runs link', async () => {
         render(<RunDetailPage />)
 

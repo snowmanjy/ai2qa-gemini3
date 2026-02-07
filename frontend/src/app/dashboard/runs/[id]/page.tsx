@@ -6,7 +6,7 @@ import { TestRun } from "@/types"
 import { useParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, ArrowLeft, Check, X, Sparkles, Clock, Image as ImageIcon, FileText, Lightbulb, Radio, Gauge } from "lucide-react"
+import { Loader2, ArrowLeft, Check, X, Sparkles, Clock, Image as ImageIcon, Lightbulb, Radio, Gauge } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
@@ -78,40 +78,6 @@ export default function RunDetailPage() {
     const [failedScreenshots, setFailedScreenshots] = useState<Set<number>>(() => new Set())
     const hasTrackedPageView = useRef(false)
     const isInitialLoad = useRef(true)
-
-    // Track report export event helper
-    const trackExport = (exportType: string, language?: string) => {
-        capture('report_exported', {
-            run_id: id,
-            export_type: exportType,
-            language: language,
-            run_status: run?.status,
-        });
-    };
-
-    // Download file
-    const downloadWithAuth = async (url: string, filename: string) => {
-        try {
-            const response = await fetch(url);
-
-            if (!response.ok) {
-                throw new Error(`Download failed: ${response.status}`);
-            }
-
-            const blob = await response.blob();
-            const downloadUrl = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = downloadUrl;
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(downloadUrl);
-        } catch (error) {
-            console.error('Download error:', error);
-            toast.error('Failed to download file');
-        }
-    };
 
     useEffect(() => {
         if (!id) return;
@@ -229,22 +195,6 @@ export default function RunDetailPage() {
                         Live
                     </Badge>
                 )}
-                <div className="flex gap-2 ml-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                            trackExport('pdf');
-                            const baseUrl = API_BASE_URL;
-                            downloadWithAuth(`${baseUrl}/test-runs/${id}/export/pdf`, `test-run-${id}.pdf`);
-                        }}
-                        title="Download visual report with screenshots"
-                    >
-                        <FileText className="h-4 w-4 mr-2" />
-                        PDF
-                    </Button>
-                </div>
-                <p className="text-xs text-muted-foreground ml-2 mt-1">No lock-in. Own your tests.</p>
             </div>
 
             {/* Progress Bar (when running or pending) */}
