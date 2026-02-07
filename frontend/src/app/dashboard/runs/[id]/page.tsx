@@ -585,13 +585,33 @@ export default function RunDetailPage() {
                                                     )}
 
                                                     {/* Performance Issues */}
-                                                    {step.performanceMetrics.issues && step.performanceMetrics.issues.length > 0 && (
-                                                        <div className="mt-2 pt-2 border-t border-blue-500/20">
-                                                            <div className="text-xs text-amber-600 dark:text-amber-400">
-                                                                {step.performanceMetrics.issues.length} issue{step.performanceMetrics.issues.length > 1 ? 's' : ''} detected
+                                                    {step.performanceMetrics.issues && step.performanceMetrics.issues.length > 0 && (() => {
+                                                        const issues = step.performanceMetrics!.issues!;
+                                                        const critical = issues.filter(i => i.severity === 'CRITICAL').length;
+                                                        const high = issues.filter(i => i.severity === 'HIGH').length;
+                                                        const medium = issues.filter(i => i.severity === 'MEDIUM').length;
+                                                        return (
+                                                            <div className="mt-2 pt-2 border-t border-blue-500/20 space-y-1.5">
+                                                                <div className="text-xs text-amber-600 dark:text-amber-400 flex flex-wrap gap-2">
+                                                                    {critical > 0 && <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500" />{critical} critical</span>}
+                                                                    {high > 0 && <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-orange-500" />{high} high</span>}
+                                                                    {medium > 0 && <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-500" />{medium} medium</span>}
+                                                                </div>
+                                                                <ul className="space-y-1">
+                                                                    {issues.map((issue, idx) => (
+                                                                        <li key={idx} className="text-xs text-muted-foreground flex items-start gap-1.5">
+                                                                            <span className={`mt-0.5 w-1.5 h-1.5 rounded-full shrink-0 ${
+                                                                                issue.severity === 'CRITICAL' ? 'bg-red-500' :
+                                                                                issue.severity === 'HIGH' ? 'bg-orange-500' :
+                                                                                issue.severity === 'MEDIUM' ? 'bg-yellow-500' : 'bg-slate-400'
+                                                                            }`} />
+                                                                            <span className="truncate">{issue.message}</span>
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
                                                             </div>
-                                                        </div>
-                                                    )}
+                                                        );
+                                                    })()}
                                                 </div>
                                             )}
 
