@@ -369,6 +369,8 @@ public class AgentOrchestrator {
         Map<String, Integer> retryCounts = new HashMap<>();
         // Track dismissed obstacles across the ENTIRE test run to avoid infinite loops
         java.util.Set<String> dismissedObstacleTypes = new java.util.HashSet<>();
+        // Cache last DOM content checked for obstacles — skip AI call if DOM hasn't changed
+        java.util.concurrent.atomic.AtomicReference<String> lastObstacleCheckedContent = new java.util.concurrent.atomic.AtomicReference<>();
         int loopIterations = 0;
 
         log.info("Execution loop starting, elapsed so far: {} seconds",
@@ -420,7 +422,7 @@ public class AgentOrchestrator {
             ActionStep step = nextStepOpt.get();
             try {
                 int retryCount = retryCounts.getOrDefault(step.stepId(), 0);
-                executeStep(testRun, step, retryCount, retryCounts, dismissedObstacleTypes);
+                executeStep(testRun, step, retryCount, retryCounts, dismissedObstacleTypes, lastObstacleCheckedContent);
             } catch (Exception e) {
                 log.error("Step execution failed", e);
                 // Fail run on unhandled exception - categorize as system error
@@ -434,7 +436,8 @@ public class AgentOrchestrator {
     }
 
     private void executeStep(TestRun testRun, ActionStep step, int retryCount, Map<String, Integer> retryCounts,
-                              java.util.Set<String> dismissedObstacleTypes) {
+                              java.util.Set<String> dismissedObstacleTypes,
+                              java.util.concurrent.atomic.AtomicReference<String> lastObstacleCheckedContent) {
         log.info("Executing step: {}", step);
         Instant startTime = clock.instant();
 
@@ -444,7 +447,7 @@ public class AgentOrchestrator {
         // 2. Proactive Obstacle Detection - "A human QA would just click the Agree button"
         // Before executing any step, check if there's a blocking popup/modal and dismiss it
         // Note: dismissedObstacleTypes tracks obstacles dismissed across the ENTIRE test run
-        before = clearObstaclesIfPresent(testRun, before, dismissedObstacleTypes);
+        before = clearObstaclesIfPresent(testRun, before, dismissedObstacleTypes, lastObstacleCheckedContent);
 
         SelectorResolution selectorResolution = resolveSelector(testRun, step, before);
         if (selectorResolution.isUnresolved()) {
@@ -629,7 +632,18 @@ public class AgentOrchestrator {
      * @return Updated snapshot after clearing obstacles (or original if none found)
      */
     private DomSnapshot clearObstaclesIfPresent(TestRun testRun, DomSnapshot snapshot,
-                                                java.util.Set<String> dismissedObstacleTypes) {
+                                                java.util.Set<String> dismissedObstacleTypes,
+                                                java.util.concurrent.atomic.AtomicReference<String> lastObstacleCheckedContent) {
+        // Skip obstacle detection if DOM hasn't changed since last check.
+        // Each AI obstacle detection call takes ~45s on Gemini Flash — skipping redundant
+        // checks prevents a timeout death spiral when multiple steps fail in a row.
+        String currentContent = snapshot.content();
+        if (currentContent != null && currentContent.equals(lastObstacleCheckedContent.get())) {
+            log.debug("[OBSTACLE] DOM unchanged since last check ({} chars) - skipping AI detection",
+                    currentContent.length());
+            return snapshot;
+        }
+
         DomSnapshot currentSnapshot = snapshot;
         int obstaclesDismissedThisStep = 0;
         // Track attempts per obstacle type within this step to allow retries before giving up
@@ -661,6 +675,7 @@ public class AgentOrchestrator {
                 if (obstaclesDismissedThisStep > 0) {
                     log.info("[OBSTACLE] Cleared {} obstacle(s) this step, path is now clear", obstaclesDismissedThisStep);
                 }
+                lastObstacleCheckedContent.set(currentSnapshot.content());
                 return currentSnapshot;
             }
 
@@ -671,6 +686,7 @@ public class AgentOrchestrator {
             if (dismissedObstacleTypes.contains(obstacleType)) {
                 log.info("[OBSTACLE] Already dismissed '{}' earlier in this test run - skipping",
                         obstacleType);
+                lastObstacleCheckedContent.set(currentSnapshot.content());
                 return currentSnapshot;
             }
 
@@ -763,6 +779,7 @@ public class AgentOrchestrator {
         dismissedObstacleTypes.addAll(attemptsByType.keySet());
         log.warn("[OBSTACLE] Reached max attempts ({}) clearing obstacles. Attempted types: {}",
                 config.getMaxObstacleClearAttempts(), attemptsByType.keySet());
+        lastObstacleCheckedContent.set(currentSnapshot.content());
         return currentSnapshot;
     }
 
